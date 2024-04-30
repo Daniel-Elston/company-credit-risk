@@ -1,0 +1,2 @@
+git commit -m "Data Insert: - db_ops.py created, to manage credentials and connections - db_management.py created - DataBaseManagement object created with insert_data method - Inserts each sheet into pgsql database as new
+table"

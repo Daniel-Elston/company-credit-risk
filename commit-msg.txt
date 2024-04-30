@@ -1,0 +1,5 @@
+Insert Data to DB
+
+- db_ops.py created to handle authentication and connections
+- db_management.py created to insert data
+- DataBaseManagement object and insert_data method created
