@@ -1,5 +1,5 @@
-Insert Data to DB
+Insert Adjustment and Data Reading
 
-- db_ops.py created to handle authentication and connections
-- db_management.py created to insert data
-- DataBaseManagement object and insert_data method created
+- Adjusted table naming to replace '-', '_'
+- Adjusted table naming to add a char at start of sheet name
+- make_dataset.py restarted to test loading of new table names from db
