@@ -1,5 +1,7 @@
-Insert Adjustment and Data Reading
+Export Dataset: PGSQL Table -> .parquet
 
-- Adjusted table naming to replace '-', '_'
-- Adjusted table naming to add a char at start of sheet name
-- make_dataset.py restarted to test loading of new table names from db
+- Amended make_dataset.py to remove initial test code
+- Added LoadData class object
+- table_to_parquet method handles the efficient loading of data from pgsql table to parquet files
+- Added test() method to check the resultant .parquet files using pandas
+- Avoided use of pandas in favour of PyArrow for efficiency

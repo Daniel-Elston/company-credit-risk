@@ -17,11 +17,12 @@ class DataBaseManagement(DataBaseOps):
     def insert_data(self):
         self.logger.info('Begininning data insert')
         raw_data = pd.ExcelFile(self.data_path, engine='openpyxl')
-        new_names = [f't{x.replace('-', '_')}' for x in raw_data.sheet_names]
+        processed_names = [
+            f't{x.replace('-', '_')}' for x in raw_data.sheet_names]
 
         count = 0
         try:
-            for sheet_name, new_name in zip(raw_data.sheet_names, new_names):
+            for sheet_name, new_name in zip(raw_data.sheet_names, processed_names):
                 count += 1
                 df = pd.read_excel(raw_data, sheet_name=sheet_name)
                 df.to_sql(new_name.lower(), con=engine,
