@@ -1,6 +1,5 @@
 # my_config.yaml
 
-
 ##########################################################################################
 
 # LOGGING
@@ -15,3 +14,13 @@ data_path: data/raw/credit-risk.xlsx
 mappings_path: data/mapping/dtype_mappings.json
 
 ##########################################################################################
+
+# VARS
+export_tables:
+  - t1_20k
+  - t20k_40k
+  - t40k_60k
+  - t60k_80k
+  - t80k_100k
+  - t100k_121k
+  - tdescription

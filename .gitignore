@@ -1,4 +1,6 @@
 
+commit-msg.txt
+
 notebooks/*
 data/raw/*
 data/*.parquet

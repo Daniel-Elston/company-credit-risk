@@ -1,12 +1,14 @@
-import os
-import logging
+from __future__ import annotations
 
-import psycopg2
+import logging
+import os
+
 import psycopg2.pool
 from sqlalchemy import create_engine
 
 from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
+
 
 class DataBaseOps:
     def __init__(self):
@@ -15,7 +17,6 @@ class DataBaseOps:
         self.creds = self.db_creds()
         self.engine, self.conn = self.create_my_engine()
         self.pgsql_pool = self.create_my_pool()
-        
 
     def db_creds(self):
         creds = {
@@ -45,17 +46,14 @@ class DataBaseOps:
         conn = psycopg2.connect(
             f'dbname={self.creds["database"]} user={self.creds["user"]} host={self.creds["host"]} password={self.creds["password"]}')
         return engine, conn
-    
+
     # def close_pool(self):
     #     """Close the connection pool on exit."""
     #     self.pgsql_pool.closeall()
     #     self.logger.info("Connection pool closed.")
-        
+
     def ops_pipeline(self):
-        self.logger.info('Starting db_ops.py Pipeline')
         creds = self.db_creds()
         pg_pool = self.create_my_pool()
         engine, conn = self.create_my_engine()
         return creds, pg_pool, engine, conn
-        
-

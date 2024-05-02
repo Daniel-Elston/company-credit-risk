@@ -1,7 +1,9 @@
-Export Dataset: PGSQL Table -> .parquet
+Data Quality Assessment:
 
-- Amended make_dataset.py to remove initial test code
-- Added LoadData class object
-- table_to_parquet method handles the efficient loading of data from pgsql table to parquet files
-- Added test() method to check the resultant .parquet files using pandas
-- Avoided use of pandas in favour of PyArrow for efficiency
+- make_dataset.py
+	- Added create_pa_table method for PyArrow table creation using PyArrows dataset module
+	- Added create_pd_df method for dataframe creation
+
+- quality_assessment.py
+	- General exploratory metrics returned for dataset quality assessment
+	- Results saved to ``reports/analysis/*.xlsx``
