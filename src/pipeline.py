@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 
 from src.data.make_dataset import LoadData
+from src.data.processing import Processor
 from src.data.quality_assessment import QualityAssessment
 from src.visualization.exploration import Exploration
 from utils.setup_env import setup_project_env
@@ -27,7 +28,8 @@ class DataPipeline:
         qa.generate_exploratory_report(self.df, 'report.xlsx', 'info.xlsx')
 
     def run_initial_processing(self):
-        self.df = self.df.drop(columns=['No'])
+        process = Processor(self.df)
+        process.main()
 
     def run_exploration(self, df):
         exp = Exploration()

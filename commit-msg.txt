@@ -1,10 +1,5 @@
-Initial Explorations: exploration.py
+Processing: processing.py
 
-- Performed some quick exploration of the dataset
-- Prototype methods for stratified sampling, combining_datetimes, sorting and selecting
-- Plans to engineer features and perform PCA, result in stashing of progress to focus on processing.py first
-
-Other:
-	- Created sample.xlsx for quick view of data
-	- create_pq_file method added to make_dataset.py
-	- Adjusted duplicate_count in quality_assessment.py report generation
+- Basic processing applied, including dropping NaNs, encoding categorical data, scaling cont. data
+- Encoding maps saved to ``reports/analysis/sector_map.json``
+- Comments regarding credit risk M-score included in bottom of processing.py

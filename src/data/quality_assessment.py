@@ -55,6 +55,7 @@ class QualityAssessment:
         report_df = pd.DataFrame(report_data, index=df.columns)
         statistics_df = round(df.describe(), 2)
 
-        report_df.to_excel(Path(f'reports/analysis/{report_name}'), index=True)
+        report_df.to_excel(
+            Path(f'reports/analysis/{report_name}'), index=True)
         statistics_df.to_excel(
             Path(f'reports/analysis/{info_name}'), index=True)
