@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import os
+from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.dataset as ds
@@ -25,7 +27,7 @@ class LoadData:
 
     def table_to_parquet(self, export_tables):
         """Stream a database table directly to a Parquet file using PyArrow"""
-        self.logger.info(
+        self.logger.debug(
             'Beginning data export: PGSQL Table -> .parquet')
 
         for table in export_tables:
@@ -59,7 +61,7 @@ class LoadData:
             file_path = f'data/sdo/{table}.parquet'
             pq.write_table(arrow_table, file_path)
 
-        self.logger.info('Export complete')
+        self.logger.debug('Export complete')
 
     def create_pa_table(self):
         dataset_path = 'data/sdo/'
@@ -70,30 +72,22 @@ class LoadData:
 
     def create_pd_df(self, table):
         df = table.to_pandas()
+        self.logger.debug('Dataframe shape: %s', df.shape)
         return df
 
-    # def main(self):
-    #     export_tables = [
-    #         't1_20k', 't20k_40k', 't40k_60k', 't60k_80k', 't80k_100k', 't100k_121k', 'tdescription']
+    def create_pq_file(self):
+        filepath = Path('data/interim/combined.parquet')
+        if os.path.isfile(filepath):
+            pass
+        else:
+            table = self.create_pa_table()
+            pq.write_table(table, filepath)
 
-    #     self.logger.info(
-    #         'Beginning data export: PGSQL Table -> .parquet')
+    # def main(self):
+    #     export_tables = config['export_tables']
     #     t1 = time.time()
     #     self.table_to_parquet(export_tables)
     #     t2 = time.time()
 
     #     timed_sheet = round((t2-t1)/len(export_tables), 4)
     #     timed_total = round((t2-t1), 4)
-    #     self.logger.info(
-    #         'Time to export all Data: %s, ~ Time to export each sheet: %s', timed_total, timed_sheet)
-    #     pass
-
-    # def test(self):
-    #     export_tables = [
-    #         't1_20k', 't20k_40k', 't40k_60k', 't60k_80k', 't80k_100k', 't100k_121k', 'tdescription']
-    #     self.concat_pa_table(export_tables)
-
-
-# if __name__ == "__main__":
-#     load = LoadData()
-#     load.main()

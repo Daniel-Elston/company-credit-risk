@@ -38,7 +38,7 @@ class QualityAssessment:
             nan_count = df[col].isna().sum()
             nan_percent = round((nan_count/total_rows)*100, 2)
 
-            duplicate_count = df[col].duplicated().sum()
+            duplicate_count = df[col].duplicated(keep='first').sum()
             duplicate_percent = round((duplicate_count/total_rows)*100, 2)
 
             unique_count = df[col].nunique()

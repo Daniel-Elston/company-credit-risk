@@ -23,4 +23,4 @@ export_tables:
   - t60k_80k
   - t80k_100k
   - t100k_121k
-  - tdescription
+  # - tdescription
