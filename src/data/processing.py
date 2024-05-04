@@ -42,7 +42,6 @@ class Processor:
             "_" + self.df['Sector 1']
         self.df[['Combined_Sector']] = self.df[['Combined_Sector']].apply(
             label_encoder.fit_transform)
-        # sector_map = dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
         sector_map = {category: idx for idx,
                       category in enumerate(label_encoder.classes_)}
         save_json(sector_map, Path('reports/analysis/sector_map.json'))

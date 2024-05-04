@@ -27,8 +27,8 @@ class Exploration:
         return table, df, report
 
     def stratified_random_sample(self):
-        df_strat = self.df.groupby('Sector 2').apply(
-            lambda x: x.sample(frac=0.1))
+        df_strat = self.df.groupby('Sector 1', group_keys=False).apply(
+            lambda x: x.sample(min(len(x), int(0.1 * len(x)))))
         return df_strat
 
     def combine_dt(self):
@@ -50,16 +50,16 @@ class Exploration:
                         pl_tax, mscore, leverage, roe, tasset]
         return df_by_metric
 
-    def sorting_table(self):
+    def sorting_table(self, n):
         sorted_table = self.table.sort_by([("ROE.2020", "descending")])
 
-        top_10 = sorted_table.slice(0, 50)
-        bot_10 = sorted_table.slice(len(sorted_table) - 50, 50)
+        top_n = sorted_table.slice(0, n)
+        bot_n = sorted_table.slice(len(sorted_table) - n, n)
 
-        top_10_companies = top_10.select(['Company name', 'ROE.2020'])
-        bottom_10_companies = bot_10.select(['Company name', 'ROE.2020'])
+        top_n_companies = top_n.select(['Company name', 'ROE.2020'])
+        bottom_10_companies = bot_n.select(['Company name', 'ROE.2020'])
 
-        print(top_10_companies.to_pandas())
+        print(top_n_companies.to_pandas())
         print(bottom_10_companies.to_pandas())
 
     def select_by_metric(self, company_name):
@@ -74,10 +74,10 @@ class Exploration:
     def main(self):
         # table, df, report = self.load_data()
         # df_by_metric = self.combine_dt(df)
-        # self.stratified_random_sample(df)
+        self.stratified_random_sample()
         # self.query_report(report)
-        # self.sorting_table(table)
-        self.select_by_metric('SOLARPARK DELPHINUS GMBH & CO. KG')
+        # self.sorting_table(n=50)
+        # self.select_by_metric('SOLARPARK DELPHINUS GMBH & CO. KG')
 
 
 if __name__ == '__main__':

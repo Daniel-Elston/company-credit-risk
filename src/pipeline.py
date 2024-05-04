@@ -31,16 +31,15 @@ class DataPipeline:
         process = Processor(self.df)
         process.main()
 
-    def run_exploration(self, df):
+    def run_exploration(self):
         exp = Exploration()
-        exp.select_by_metric()
+        print(exp.stratified_random_sample())
 
     def main(self):
         pa_table, df = self.run_make_dataset()
         self.run_quality_assessment()
         self.run_initial_processing()
-
-        # self.run_exploration(df)
+        self.run_exploration()
 
 
 if __name__ == '__main__':

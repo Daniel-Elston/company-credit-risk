@@ -1,5 +1,5 @@
-Processing: processing.py
+Quick edit:
 
-- Basic processing applied, including dropping NaNs, encoding categorical data, scaling cont. data
-- Encoding maps saved to ``reports/analysis/sector_map.json``
-- Comments regarding credit risk M-score included in bottom of processing.py
+- Minor adjustments throughout
+- Changed stratified random sample
+- Switching to feature_eng branch
