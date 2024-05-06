@@ -1,5 +1,6 @@
-Quick edit:
+Feature Engineering:
 
-- Minor adjustments throughout
-- Changed stratified random sample
-- Switching to feature_eng branch
+- Initial feature engineering conducted (draft)
+- BuildFeatures class created
+- build_growth, build_volatility, build_metrics and pipeline methods added
+- Added Feature engineering to pipeline.py

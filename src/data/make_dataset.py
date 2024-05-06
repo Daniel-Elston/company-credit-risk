@@ -83,6 +83,18 @@ class LoadData:
             table = self.create_pa_table()
             pq.write_table(table, filepath)
 
+    def get_columns(self, df):
+        metric_cols = {col.split('.')[0] for col in df.columns if '.' in col}
+        date_cols = {col.split('.')[1] for col in df.columns if '.' in col}
+        return metric_cols, date_cols
+
+    def pipeline(self):
+        self.table_to_parquet(config['export_tables'])
+        table = self.create_pa_table()
+        df = self.create_pd_df(table)
+        metric_cols, date_cols = self.get_columns(df)
+        return table, df, list(metric_cols), list(date_cols)
+
     # def main(self):
     #     export_tables = config['export_tables']
     #     t1 = time.time()

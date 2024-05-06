@@ -13,7 +13,7 @@ project_dir, config, setup_logs = setup_project_env()
 creds, pg_pool, engine, conn = DataBaseOps().ops_pipeline()
 
 
-class Processor:
+class InitialProcessor:
     def __init__(self, df):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.df = df
@@ -53,15 +53,29 @@ class Processor:
             x in col for x in dates)]
         self.df[scale_cols] = scaler.fit_transform(self.df[scale_cols])
 
-    def main(self):
+    def pipeline(self):
         self.remove_data()
         self.map_categorical()
         self.encode_categorical()
+        return self.df
+
+
+class FurtherProcessor:
+    def __init__(self, df):
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.df = df
+
+    def scale_data(self):
+        scaler = StandardScaler()
+        dates = ['2015', '2016', '2017', '2018', '2019', '2020']
+        scale_cols = [col for col in self.df.columns if any(
+            x in col for x in dates)]
+        self.df[scale_cols] = scaler.fit_transform(self.df[scale_cols])
+
+    def initial_processing(self):
         self.scale_data()
+        return self.df
 
-
-if __name__ == '__main__':
-    Processor().main()
 
 # investment_grade = [0,1,2,3] # low to moderate credit risk
 # speculative_grade = [4,5,6,7,8,9] # high credit risk, potentially defaulted
