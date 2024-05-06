@@ -2,54 +2,54 @@ from __future__ import annotations
 
 import logging
 
-from database.db_ops import DataBaseOps
+import numpy as np
+
 from utils.setup_env import setup_project_env
+# from database.db_ops import DataBaseOps
 
 project_dir, config, setup_logs = setup_project_env()
-creds, pg_pool, engine, conn = DataBaseOps().ops_pipeline()
+# creds, pg_pool, engine, conn = DataBaseOps().ops_pipeline()
 
 
 class BuildFeatures:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def build_growth(self, df):
-        # dates = range(2015, 2021)
-        dates = ['2020', '2019', '2018', '2017', '2016', '2015']
-        metric_cols = [col for col in df.columns if any(
-            x in col for x in dates)]
+    def build_growth(self, df, metric_cols, date_cols):
+        for idx in range(1, len(date_cols)):
+            current_year = date_cols[idx - 1]
+            previous_year = date_cols[idx]
 
+            for metric in metric_cols:
+                current_metric = f'{metric}.{current_year}'
+                previous_metric = f'{metric}.{previous_year}'
+
+                df[f'growth_{metric}.{current_year}'] = (
+                    df[current_metric] - df[previous_metric]) / (df[previous_metric]).replace(0, np.nan)
+        return df
+
+    def build_volatility(self, df, metric_cols, date_cols):
         for metric in metric_cols:
-            df[f'growth_{metric}'] = (
-                df[f'{metric}'] - df[f'{metric}']) / df[f'{metric}']
+            cols = [f'{metric}.{year}' for year in date_cols if f'{
+                metric}.{year}' in df.columns]
+            df[f'volatility_{metric}'] = df[cols].std(axis=1)
         return df
 
-    def build_volatility(self, df):
-        dates = range(2015, 2021)
-        metric_cols = [col for col in df.columns if any(
-            x in col for x in dates)]
-
-        for year, metric in zip(dates, metric_cols):
-            df[f'volatility_{metric}.{year}'] = df[f'{
-                metric}.{year}'].std(axis=1)
-        return df
-
-    def build_metrics(self, df):
-        for year in range(2015, 2021):
-            df[f'debt_to_eq{year}'] = df[f'TAsset.{
-                year}'] / (df[f'TAsset.{year}'] - df[f'Leverage.{year}'])
-            df[f'op_marg{year}'] = df[f'EBIT.{
-                year}'] / df[f'Turnover.{year}']
+    def build_metrics(self, df, date_cols):
+        eps = 1e-6
+        for year in date_cols:
+            df[f'debt_to_eq{year}'] = df[f'TAsset.{year}'] / \
+                (df[f'TAsset.{year}'] - df[f'Leverage.{year}'] + eps)
+            df[f'op_marg{year}'] = df[f'EBIT.{year}'] / \
+                (df[f'Turnover.{year}'] + eps)
             df[f'asset_turnover{year}'] = df[f'Turnover.{
-                year}'] / df[f'TAsset.{year}']
-            df[f'roa{year}'] = df[f'EBIT.{
-                year}'] / df[f'TAsset.{year}']
+                year}'] / (df[f'TAsset.{year}'] + eps)
+            df[f'roa{year}'] = df[f'EBIT.{year}'] / \
+                (df[f'TAsset.{year}'] + eps)
         return df
 
-    def pipeline(self, df):
-        df = self.build_growth(df)
-        # df = self.build_volatility(df)
-        # df = self.build_metrics(df)
-        # print(df.iloc[:,-8:])
-        # print(df.shape)
+    def pipeline(self, df, metric_cols, date_cols):
+        df = self.build_growth(df, metric_cols, date_cols)
+        df = self.build_volatility(df, metric_cols, date_cols)
+        df = self.build_metrics(df, date_cols)
         return df

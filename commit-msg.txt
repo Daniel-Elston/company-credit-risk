@@ -1,5 +1,6 @@
-Pipeline Organisation:
+Feature Engineering Continued:
 
-- Adjustments made to pipeline.py and throughout child scripts
-- Passing data to methods instead of classes
-- Added checks for output file (report/analysis/info.xlsx) existance to stop re-creating each run
+- Removal of hard coded dates and dynamic coded metric_cols
+- dates and metric cols passed as arguments (generated in make_dataset.py)
+- Adjusted draft methods to correctly build features as required
+- Added eps (epsilon) to account for division by zero errors

@@ -30,7 +30,7 @@ class DataPipeline:
 
     def run_feature_engineering(self):
         build = BuildFeatures()
-        self.df = build.pipeline(self.df)
+        self.df = build.pipeline(self.df, self.metric_cols, self.date_cols)
 
     def run_exploration(self):
         exp = Exploration()
@@ -40,7 +40,6 @@ class DataPipeline:
         self.run_make_dataset()
         self.run_quality_assessment()
         self.run_initial_processing()
-        # self.run_exploration()
         self.run_feature_engineering()
 
 

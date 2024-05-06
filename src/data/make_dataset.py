@@ -86,6 +86,7 @@ class LoadData:
     def get_columns(self, df):
         metric_cols = {col.split('.')[0] for col in df.columns if '.' in col}
         date_cols = {col.split('.')[1] for col in df.columns if '.' in col}
+        date_cols = sorted(date_cols, reverse=True)
         return metric_cols, date_cols
 
     def pipeline(self):
