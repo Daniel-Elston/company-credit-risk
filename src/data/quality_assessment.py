@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -55,7 +56,14 @@ class QualityAssessment:
         report_df = pd.DataFrame(report_data, index=df.columns)
         statistics_df = round(df.describe(), 2)
 
-        report_df.to_excel(
-            Path(f'reports/analysis/{report_name}'), index=True)
-        statistics_df.to_excel(
-            Path(f'reports/analysis/{info_name}'), index=True)
+        report_path = Path(f'reports/analysis/{report_name}')
+        statistics_path = Path(f'reports/analysis/{info_name}')
+
+        if os.path.isfile(report_path):
+            pass
+        else:
+            report_df.to_excel(report_path, index=True)
+        if os.path.isfile(statistics_path):
+            pass
+        else:
+            statistics_df.to_excel(statistics_path, index=True)

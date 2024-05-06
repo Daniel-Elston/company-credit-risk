@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
 from sklearn.preprocessing import LabelEncoder
@@ -14,18 +15,18 @@ creds, pg_pool, engine, conn = DataBaseOps().ops_pipeline()
 
 
 class InitialProcessor:
-    def __init__(self, df):
+    def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.df = df
 
-    def remove_data(self):
-        self.logger.debug('Removing data: Original shape: %s', self.df.shape)
-        self.df = self.df.drop(columns=['No'])
-        self.df = self.df.dropna()
-        self.df = self.df[~self.df[['Company name']].duplicated(keep='first')]
-        self.logger.debug('Removing data: Final shape: %s', self.df.shape)
+    def remove_data(self, df):
+        self.logger.debug('Removing data: Original shape: %s', df.shape)
+        df = df.drop(columns=['No'])
+        df = df.dropna()
+        df = df[~df[['Company name']].duplicated(keep='first')]
+        self.logger.debug('Removing data: Final shape: %s', df.shape)
+        return df
 
-    def map_categorical(self):
+    def map_categorical(self, df):
         self.logger.debug('Mapping categorical')
         to_map = ['Country', 'MScore.2020', 'MScore.2019',
                   'MScore.2018', 'MScore.2017', 'MScore.2016', 'MScore.2015']
@@ -33,48 +34,48 @@ class InitialProcessor:
             'Italy': 0, 'France': 1, 'Spain': 2, 'Germany': 3,
             'AAA': 0, 'AA': 1, 'A': 2, 'BBB': 3, 'BB': 4, 'B': 5, 'CCC': 6, 'CC': 7, 'C': 8, 'D': 9
         }
-        self.df[to_map] = self.df[to_map].replace(mapping)
+        df[to_map] = df[to_map].replace(mapping)
+        return df
 
-    def encode_categorical(self):
+    def encode_categorical(self, df):
         self.logger.debug('Encoding categories')
         label_encoder = LabelEncoder()
-        self.df['Combined_Sector'] = self.df['Sector 2'] + \
-            "_" + self.df['Sector 1']
-        self.df[['Combined_Sector']] = self.df[['Combined_Sector']].apply(
+        df['Combined_Sector'] = df['Sector 2'] + \
+            "_" + df['Sector 1']
+        df[['Combined_Sector']] = df[['Combined_Sector']].apply(
             label_encoder.fit_transform)
         sector_map = {category: idx for idx,
                       category in enumerate(label_encoder.classes_)}
-        save_json(sector_map, Path('reports/analysis/sector_map.json'))
 
-    def scale_data(self):
-        scaler = StandardScaler()
-        dates = ['2015', '2016', '2017', '2018', '2019', '2020']
-        scale_cols = [col for col in self.df.columns if any(
-            x in col for x in dates)]
-        self.df[scale_cols] = scaler.fit_transform(self.df[scale_cols])
+        filepath = Path('reports/analysis/sector_map.json')
+        if os.path.isfile(filepath):
+            pass
+        else:
+            save_json(sector_map, filepath)
+        return df
 
-    def pipeline(self):
-        self.remove_data()
-        self.map_categorical()
-        self.encode_categorical()
-        return self.df
+    def pipeline(self, df):
+        df = self.remove_data(df)
+        df = self.map_categorical(df)
+        df = self.encode_categorical(df)
+        return df
 
 
 class FurtherProcessor:
-    def __init__(self, df):
+    def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.df = df
 
-    def scale_data(self):
+    def scale_data(self, df):
         scaler = StandardScaler()
         dates = ['2015', '2016', '2017', '2018', '2019', '2020']
-        scale_cols = [col for col in self.df.columns if any(
+        scale_cols = [col for col in df.columns if any(
             x in col for x in dates)]
-        self.df[scale_cols] = scaler.fit_transform(self.df[scale_cols])
+        df[scale_cols] = scaler.fit_transform(df[scale_cols])
+        return df
 
-    def initial_processing(self):
+    def initial_processing(self, df):
         self.scale_data()
-        return self.df
+        return df
 
 
 # investment_grade = [0,1,2,3] # low to moderate credit risk

@@ -25,21 +25,20 @@ class DataPipeline:
         qa.generate_exploratory_report(self.df, 'report.xlsx', 'info.xlsx')
 
     def run_initial_processing(self):
-        process = InitialProcessor(self.df)
-        self.df = process.pipeline()
+        process = InitialProcessor()
+        self.df = process.pipeline(self.df)
 
     def run_feature_engineering(self):
-        build = BuildFeatures(self.df)
-        self.df = build.pipeline()
+        build = BuildFeatures()
+        self.df = build.pipeline(self.df)
 
     def run_exploration(self):
         exp = Exploration()
         print(exp.stratified_random_sample())
 
     def main(self):
-        # pa_table, df, metric_cols, date_cols =
         self.run_make_dataset()
-        # self.run_quality_assessment()
+        self.run_quality_assessment()
         self.run_initial_processing()
         # self.run_exploration()
         self.run_feature_engineering()

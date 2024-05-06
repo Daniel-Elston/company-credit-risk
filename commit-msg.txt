@@ -1,6 +1,5 @@
-Feature Engineering:
+Pipeline Organisation:
 
-- Initial feature engineering conducted (draft)
-- BuildFeatures class created
-- build_growth, build_volatility, build_metrics and pipeline methods added
-- Added Feature engineering to pipeline.py
+- Adjustments made to pipeline.py and throughout child scripts
+- Passing data to methods instead of classes
+- Added checks for output file (report/analysis/info.xlsx) existance to stop re-creating each run
