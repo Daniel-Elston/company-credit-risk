@@ -1,6 +1,17 @@
-Feature Engineering Continued:
+Exploration
+- exploration.py Exploration class split into 2 classes
+- exploration.py outputs saved to ``reports/``
 
-- Removal of hard coded dates and dynamic coded metric_cols
-- dates and metric cols passed as arguments (generated in make_dataset.py)
-- Adjusted draft methods to correctly build features as required
-- Added eps (epsilon) to account for division by zero errors
+- Analysis class object:
+	- Generates stratified sample dataframe for visuals
+	- Identified outliers for processing
+
+- Visualiser class object:
+	- Generates pairplots
+	- Generates correlation plot
+	- Generates trend lines over years
+	- Plots include raw and engineered features
+
+- Added further logging for build_features.py and processing.py
+- General checks for dataframe shape changes and rows removed
+- Logging format consistency adjusted

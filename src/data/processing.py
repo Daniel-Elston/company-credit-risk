@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import warnings
 from pathlib import Path
 
 from sklearn.preprocessing import LabelEncoder
@@ -13,17 +14,22 @@ from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
 creds, pg_pool, engine, conn = DataBaseOps().ops_pipeline()
 
+# ignore warnings
+warnings.filterwarnings("ignore")
+
 
 class InitialProcessor:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def remove_data(self, df):
-        self.logger.debug('Removing data: Original shape: %s', df.shape)
+        len1 = len(df)
         df = df.drop(columns=['No'])
         df = df.dropna()
         df = df[~df[['Company name']].duplicated(keep='first')]
-        self.logger.debug('Removing data: Final shape: %s', df.shape)
+        len2 = len(df)
+        total_removed = len1 - len2
+        self.logger.debug('Removing data: Rows removed: %s', total_removed)
         return df
 
     def map_categorical(self, df):
@@ -55,9 +61,13 @@ class InitialProcessor:
         return df
 
     def pipeline(self, df):
+        self.logger.info(
+            'Running InitialProcessor pipeline. Data shape: %s', df.shape)
         df = self.remove_data(df)
         df = self.map_categorical(df)
         df = self.encode_categorical(df)
+        self.logger.info(
+            'InitialProcessor pipeline complete. Data shape: %s', df.shape)
         return df
 
 

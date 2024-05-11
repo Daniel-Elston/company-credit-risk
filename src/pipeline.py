@@ -6,7 +6,8 @@ from src.data.make_dataset import LoadData
 from src.data.processing import InitialProcessor
 from src.data.quality_assessment import QualityAssessment
 from src.features.build_features import BuildFeatures
-from src.visualization.exploration import Exploration
+from src.visualization.exploration import Analysis
+from src.visualization.exploration import Visualiser
 from utils.setup_env import setup_project_env
 # from src.data.processing import FurtherProcessor
 project_dir, config, setup_logs = setup_project_env()
@@ -33,14 +34,17 @@ class DataPipeline:
         self.df = build.pipeline(self.df, self.metric_cols, self.date_cols)
 
     def run_exploration(self):
-        exp = Exploration()
-        print(exp.stratified_random_sample())
+        analyse = Analysis()
+        vis = Visualiser()
+        df_stratified = analyse.pipeline(self.df)
+        vis.pipeline(df_stratified, self.date_cols)
 
     def main(self):
         self.run_make_dataset()
         self.run_quality_assessment()
         self.run_initial_processing()
         self.run_feature_engineering()
+        self.run_exploration()
 
 
 if __name__ == '__main__':
