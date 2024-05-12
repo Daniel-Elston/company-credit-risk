@@ -5,6 +5,7 @@ import os
 import warnings
 from pathlib import Path
 
+import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
@@ -75,16 +76,57 @@ class FurtherProcessor:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
+    def replace_outliers(self, df, method, quantiles):
+        for column in df.select_dtypes(include=[np.number]).columns:
+            if method == "cap":
+                lower_bound, upper_bound = df[column].quantile(
+                    quantiles[0]), df[column].quantile(quantiles[1])
+                df[column] = np.where(
+                    df[column] < lower_bound, lower_bound, df[column])
+                df[column] = np.where(
+                    df[column] > upper_bound, upper_bound, df[column])
+            elif method == "median":
+                median = df[column].median()
+                q1 = df[column].quantile(0.25)
+                q3 = df[column].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df[column] = np.where((df[column] < lower_bound) | (
+                    df[column] > upper_bound), median, df[column])
+            elif method == "winsorize":
+                lower_bound, upper_bound = df[column].quantile(
+                    quantiles[0]), df[column].quantile(quantiles[1])
+                df[column] = np.where(
+                    df[column] < lower_bound, lower_bound, df[column])
+                df[column] = np.where(
+                    df[column] > upper_bound, upper_bound, df[column])
+            elif method == "zscore":
+                mean = df[column].mean()
+                std = df[column].std()
+                df[column] = np.where(
+                    (df[column] < mean - 2 * std) | (df[column] > mean + 2 * std), mean, df[column])
+        return df
+
     def scale_data(self, df):
         scaler = StandardScaler()
-        dates = ['2015', '2016', '2017', '2018', '2019', '2020']
-        scale_cols = [col for col in df.columns if any(
-            x in col for x in dates)]
+        df_numeric = df.select_dtypes(include=[np.number])
+        scale_cols = df_numeric.columns
         df[scale_cols] = scaler.fit_transform(df[scale_cols])
         return df
 
-    def initial_processing(self, df):
-        self.scale_data()
+    def pipeline(self, df):
+        # Apply outlier treatment
+        self.replace_outliers(df, "winsorize", (0.05, 0.95))
+        growth_cols = df.columns[df.columns.str.contains("growth" and "2018")]
+        self.replace_outliers(df[growth_cols], 'zscore', (0.05, 0.95))
+
+        # try to explore features in 2018 instead of 2020
+        # if skew remains, proceed as is
+        # or try inverse transform
+        # growth outliers are expected as some companies do better than avg
+
+        # self.scale_data()
         return df
 
 

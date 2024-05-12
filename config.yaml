@@ -1,5 +1,10 @@
 # my_config.yaml
 
+# PARAMETERS
+year: '2018'
+
+
+
 ##########################################################################################
 
 # LOGGING
@@ -15,7 +20,7 @@ mappings_path: data/mapping/dtype_mappings.json
 
 ##########################################################################################
 
-# VARS
+# LISTS
 export_tables:
   - t1_20k
   - t20k_40k
@@ -24,3 +29,37 @@ export_tables:
   - t80k_100k
   - t100k_121k
   # - tdescription
+
+
+raw_features:
+  - Turnover.
+  - EBIT.
+  - PLTax.
+  # - MScore.
+  - Leverage.
+  - ROE.
+  - TAsset.
+
+growth_features:
+  - growth_TAsset.
+  - growth_EBIT.
+  # - growth_MScore.
+  - growth_PLTax.
+  - growth_Turnover.
+  - growth_Leverage.
+  - growth_ROE.
+
+volatility_features:
+  - volatility_TAsset
+  - volatility_EBIT
+  # - volatility_MScore
+  - volatility_PLTax
+  - volatility_Turnover
+  - volatility_Leverage
+  - volatility_ROE
+
+further_features:
+  - debt_to_eq
+  - op_marg
+  - asset_turnover
+  - roa

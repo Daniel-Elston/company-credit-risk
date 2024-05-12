@@ -1,17 +1,21 @@
-Exploration
-- exploration.py Exploration class split into 2 classes
-- exploration.py outputs saved to ``reports/``
+Further-Processing:
 
-- Analysis class object:
-	- Generates stratified sample dataframe for visuals
-	- Identified outliers for processing
+- Further-processing and exploration is requiring further modukes and scripts than anticipated.
+- As things are getting a bit messy and long, an analysis.py pipeline script will be generated in a separate branch.
+- Further-processing will be stashed for now to build the analysis.py script
 
-- Visualiser class object:
-	- Generates pairplots
-	- Generates correlation plot
-	- Generates trend lines over years
-	- Plots include raw and engineered features
+exploration.py:
+	- evaluate_skew method added to Analysis class
+	- transformation code included for quick view of effects (to be moved)
+	- SkewDetector class created to focus code on skew (essentially a copy of Analysis class methods)
 
-- Added further logging for build_features.py and processing.py
-- General checks for dataframe shape changes and rows removed
-- Logging format consistency adjusted
+procesisng.py:
+	- replace_outliers method added for quick handling of outliers
+	- pipeline method added for modularity
+
+build_features.py:
+	- Added fillna(mean) to build_growth method
+
+Further file adjustments:
+	- config.yaml: added year parameters to easily adjust post/pre COVID19
+	- config_ops.py: script for performing operations on lists/variables stored in config
