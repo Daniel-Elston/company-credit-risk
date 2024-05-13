@@ -50,7 +50,7 @@ class DataPipeline:
         """Visualise Stratified Data"""
         df_stratified = Sampling().stratified_random_sample(self.df)
         visual = Visualiser()
-        visual.pipeline(df_stratified, run_number)
+        visual.pipeline(df_stratified, self.cont, run_number)
 
     def run_further_processing(self):
         """Remove outliers"""
@@ -72,12 +72,12 @@ class DataPipeline:
         self.run_initial_processing()
         self.run_feature_engineering()
 
-        # self.run_exploration(run_number=1)
-        # self.run_further_processing()
-        # self.run_exploration(run_number=2)
-        # self.run_statistical_analysis()
-        # self.apply_transforms()
-        # self.run_exploration(run_number=3)
+        self.run_exploration(run_number=1)
+        self.run_further_processing()
+        self.run_exploration(run_number=2)
+        self.run_statistical_analysis()
+        self.apply_transforms()
+        self.run_exploration(run_number=3)
 
 
 if __name__ == '__main__':

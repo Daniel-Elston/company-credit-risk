@@ -7,8 +7,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from utils.config_ops import amend_features
 from utils.setup_env import setup_project_env
+# from utils.config_ops import amend_features
 sns.set_theme(style="darkgrid")
 project_dir, config, setup_logs = setup_project_env()
 # import statistics
@@ -63,19 +63,44 @@ class Visualiser:
             self.logger.info(f'Creating ``{dir_path}`` directory.')
             os.mkdir(dir_path)
 
-    def pipeline(self, df, run_number):
+    def amend_col_lists(self, cont):
+        volatil_cols = cont[cont.str.contains('volatility')]
+        raw_cols = ['Turnover.2018', 'EBIT.2018', 'PLTax.2018',
+                    'Leverage.2018', 'ROE.2018', 'TAsset.2018']
+        growth_cols = ['growth_Leverage.2018', 'growth_EBIT.2018', 'growth_TAsset.2018',
+                       'growth_PLTax.2018', 'growth_ROE.2018', 'growth_Turnover.2018']
+        further_cols = ['debt_to_eq2018', 'op_marg2018',
+                        'asset_turnover2018', 'roa2018']
+        corr_cols = ['growth_MScore.2018', 'MScore.2018', 'volatility_MScore']
+
+        dist_store = [raw_cols, volatil_cols, growth_cols, further_cols]
+        dist_names = ['raw', 'vol', 'grow', 'further']
+
+        corr_store = [raw_cols, volatil_cols,
+                      growth_cols, further_cols, corr_cols]
+        corr_names = ['raw', 'vol', 'grow', 'further', 'corr']
+        return dist_store, dist_names, corr_store, corr_names
+
+    def pipeline(self, df, cont, run_number):
         self.logger.info(
             f'Running Visualiser Pipeline. Run Number {run_number}...')
 
         self.exploration_filing(run_number)
-        raw, grow, vol, further = amend_features(config)
+        dist_store, dist_names, corr_store, corr_names = self.amend_col_lists(
+            cont)
 
-        for i, j in zip([raw, grow, vol, further], ['raw', 'grow', 'vol', 'further']):
+        for i, j in zip(dist_store, dist_names):
             self.generate_pair_plot(df, i, f'exploration_{
                                     run_number}/pair_plot_{j}')
+
+        for i, j in zip(corr_store, corr_names):
             self.generate_heat_plot(df, i, f'exploration_{
                                     run_number}/corr_map_{j}')
-        # self.generate_heat_plot(df, [raw+grow+vol+further], f'exploration_{run_number}/corr_map_all')
+
+        combined_cols = list(corr_store[0]) + list(corr_store[1]) + list(
+            corr_store[2]) + list(corr_store[3]) + list(corr_store[4])
+        self.generate_heat_plot(df, combined_cols, f'exploration_{
+                                run_number}/corr_map_all')
 
         self.logger.info(
             f'Visualiser Pipeline Completed. Figures saved to: ``{config['exploration_figs']}/exploration_{run_number}/*.png``')

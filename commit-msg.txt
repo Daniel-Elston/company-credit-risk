@@ -1,9 +1,3 @@
-Passing Discrete:
-- Passing newly formed discrete/continuous variable list
-- Instead of generating sample year cols (cont. variables for a single year), continuous cols for all years generated and passed to:
-	- analysis.py
-	- transforms.py
-
-transforms.py:
-	- added calc_skew helper and apply_transforms method
-	- cleaned pipeline method
+Passing Discrete - exploration.py:
+- Added amend_cols_list method to generate list of cols and names for plotting
+- Fixed main.py
