@@ -11,8 +11,6 @@ from utils.config_ops import amend_features
 from utils.file_handler import load_json
 from utils.file_handler import save_json
 from utils.setup_env import setup_project_env
-# import seaborn as sns
-# sns.set_theme(style="darkgrid")
 project_dir, config, setup_logs = setup_project_env()
 
 
@@ -84,8 +82,7 @@ class GenerateSkewAnalysis:
             original_skew = skew(df[column].dropna())
             original_kurtosis = kurtosis(df[column].dropna())
 
-            transformed_df = self.apply_transformation(
-                df.copy(), [column], transform_func)
+            transformed_df = transform_func(df.copy(), column)
 
             transformed_skew = skew(transformed_df[column].dropna())
             transformed_kurtosis = kurtosis(transformed_df[column].dropna())
@@ -162,10 +159,7 @@ class EvaluateSkewAnalysis:
 
         results = self.load_results()
         compiled_data = self.compile_transform_data(results)
-        optimal_transforms = self.get_optimal_transform(compiled_data)
-        for col, (optimal_transform, skew_val) in optimal_transforms.items():
-            print(f"For column {col}, the optimal trans is {
-                  optimal_transform} with skew {skew_val}")
+        self.get_optimal_transform(compiled_data)
 
         self.logger.info(
             'Skew Evaluation and Analysis Pipeline Completed. Results saved to: ``reports/analysis/transform_map.json``')

@@ -29,8 +29,7 @@ class Visualiser:
         select_metrics = df[cols]
         sns.pairplot(
             select_metrics, diag_kind='kde',
-            plot_kws={'alpha': 0.8, 's': 10})
-        plt.title(f'Pair Plot of {title} Metrics {config['year']}')
+            plot_kws={'alpha': 0.8, 's': 2, 'edgecolor': 'k'})
         plt.savefig(Path(f'{config['exploration_figs']}/{title}.png'))
 
     def generate_heat_plot(self, df, cols, title):
@@ -66,14 +65,15 @@ class Visualiser:
 
     def pipeline(self, df, run_number):
         self.logger.info(
-            'Running Visualiser Pipeline.')
+            f'Running Visualiser Pipeline. Run Number {run_number}...')
         self.exploration_filing(run_number)
         raw, grow, vol, further = amend_features(config)
 
         for i, j in zip([raw, grow, vol, further], ['raw', 'grow', 'vol', 'further']):
             self.generate_pair_plot(df, i, f'exploration_{
                                     run_number}/pair_plot_{j}')
-            # self.generate_heat_plot(df, i, f'exploration_{run_number}/corr_map_{j}')
+            self.generate_heat_plot(df, i, f'exploration_{
+                                    run_number}/corr_map_{j}')
         # self.generate_heat_plot(df, [raw+grow+vol+further], f'exploration_{run_number}/corr_map_all')
 
         # self.generate_trends(df.sample(1000), 'EBIT', date_cols)

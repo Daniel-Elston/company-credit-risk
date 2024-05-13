@@ -1,17 +1,17 @@
-Exploration Filing Adjustments:
-- Adding code to file figures dynamically, depending on exploration run number
+Apply Distribution Transforms:
+- Transforms have been applied to continuous variables
+- Transform algorithm decision based on transform mapping created in analysis.py: See ``reports/analysis/transform_map.json``
 
 pipeline.py:
-	- Removed generate_stratified_sample method, only used for exploration so included in run_exploration method
-	- Added run_number argument for run_exploration. Index for data visual / progress
+	- Added continuous and discrete class instances (lists of cont/disc cols)
+	- Added apply_transforms method
+	- Added extra runs of exploration to view raw, outlier removed, and dist. transformed datasets
 
-processing.py:
-	- Amended method for getting growth_features in year 2018
-	- Now using updated method of feature retrieval
+processing.py
+	- Removed StoreTransforms class -> transforms.py script
 
-exploration.py:
-	- exploration_filing method added
-	- We can now store figures from exploration of data before and after processing, for example
-	- method checks for exploration run number directory, adds if does not exist
-	- Figures are then stored in corresponding run number dir
-	- Adjusted file save paths
+transforms.py: *new*
+	- Script for storing and applying transformations
+
+config_ops.py
+	- Added mmethods to amend all years to features, and get continuous_discrete columns

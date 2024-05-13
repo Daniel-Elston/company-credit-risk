@@ -32,6 +32,13 @@ export_tables:
   - t100k_121k
   # - tdescription
 
+continuous:
+  - Turnover.
+  - EBIT.
+  - PLTax.
+  - Leverage.
+  - ROE.
+  - TAsset.
 
 raw_features:
   - Turnover.

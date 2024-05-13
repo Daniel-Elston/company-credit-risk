@@ -5,16 +5,17 @@ import logging
 from src.data.make_dataset import LoadData
 from src.data.processing import FurtherProcessor
 from src.data.processing import InitialProcessor
-from src.data.processing import StoreTransforms
 from src.data.quality_assessment import QualityAssessment
 from src.features.build_features import BuildFeatures
-from src.statistics.statistical_analysis import EvaluateSkewAnalysis
-from src.statistics.statistical_analysis import GenerateSkewAnalysis
-from src.statistics.statistical_analysis import Sampling
+from src.statistical_analysis.analysis import EvaluateSkewAnalysis
+from src.statistical_analysis.analysis import GenerateSkewAnalysis
+from src.statistical_analysis.analysis import Sampling
+from src.statistical_analysis.transforms import ApplyTransforms
+from src.statistical_analysis.transforms import StoreTransforms
 from src.visualization.exploration import Visualiser
+from utils.config_ops import continuous_discrete
 from utils.setup_env import setup_project_env
 # from utils.file_handler import load_json
-# from utils.config_ops import amend_features
 # from utils.file_handler import save_json
 project_dir, config, setup_logs = setup_project_env()
 
@@ -22,6 +23,7 @@ project_dir, config, setup_logs = setup_project_env()
 class DataPipeline:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+        # self.df = pd.read_parquet(Path('data/interim/processed.parquet'))
 
     # @staticmethod
     def run_make_dataset(self):
@@ -42,11 +44,7 @@ class DataPipeline:
         """Builds features"""
         build = BuildFeatures()
         self.df = build.pipeline(self.df, self.metric_cols, self.date_cols)
-
-    # def generate_stratified_sample(self):
-    #     """Generate stratified sample"""
-    #     sample = Sampling()
-    #     self.df_stratified = Sampling().stratified_random_sample(self.df)
+        self.continuous, self.discrete = continuous_discrete(config, self.df)
 
     def run_exploration(self, run_number):
         """Visualise Stratified Data"""
@@ -61,12 +59,12 @@ class DataPipeline:
 
     def run_statistical_analysis(self):
         """Run statistical analysis"""
-        transform_funcs = StoreTransforms().get_transform_lists()
-        GenerateSkewAnalysis().pipeline(self.df, transform_funcs)
+        self.trans_map, self.trans_funcs = StoreTransforms().get_transform_info()
+        GenerateSkewAnalysis().pipeline(self.df, self.trans_funcs)
         EvaluateSkewAnalysis().pipeline()
 
     def apply_transforms(self):
-        pass
+        self.df = ApplyTransforms().pipeline(self.df, self.trans_map)
 
     def main(self):
         self.run_make_dataset()
@@ -74,12 +72,12 @@ class DataPipeline:
         self.run_initial_processing()
         self.run_feature_engineering()
 
-        # self.generate_stratified_sample()
         self.run_exploration(run_number=1)
         self.run_further_processing()
-        self.run_exploration(2)
+        self.run_exploration(run_number=2)
         self.run_statistical_analysis()
-        self.run_exploration(3)
+        self.apply_transforms()
+        self.run_exploration(run_number=3)
 
 
 if __name__ == '__main__':

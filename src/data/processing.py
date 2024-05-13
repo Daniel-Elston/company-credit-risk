@@ -6,8 +6,6 @@ import warnings
 from pathlib import Path
 
 import numpy as np
-from scipy.special import boxcox1p
-from scipy.stats import boxcox
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
@@ -74,47 +72,6 @@ class InitialProcessor:
         return df
 
 
-class StoreTransforms:
-    def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
-
-    def apply_log(self, df, cols):
-        df[cols] = df[cols].clip(lower=0).apply(np.log1p)
-        return df
-
-    def apply_box_cox_1p(self, df, cols):
-        shifts = df[cols].min().apply(lambda x: 1 - x if x <= 0 else 0)
-        df[cols] += shifts
-        df[cols] = df[cols].apply(lambda x: boxcox1p(x, 0))
-        return df
-
-    def apply_box_cox(self, df, cols):
-        shifts = df[cols].min().apply(lambda x: 1 - x if x <= 0 else 0)
-        df[cols] += shifts
-        df[cols] = df[cols].apply(lambda x: boxcox(x, 0))
-        return df
-
-    def apply_sqrt(self, df, cols):
-        df[cols] = np.sqrt(df[cols].clip(lower=0))
-        return df
-
-    def apply_inv_sqrt(self, df, cols):
-        eps = 1e-8
-        df[cols] = 1 / np.sqrt(df[cols] + eps)
-        return df
-
-    def apply_inv(self, df, cols):
-        eps = 1e-8
-        df[cols] = 1 / (df[cols] + eps)
-        return df
-
-    def get_transform_lists(self):
-        trans_funcs = [
-            self.apply_log, self.apply_box_cox_1p, self.apply_box_cox,
-            self.apply_sqrt, self.apply_inv_sqrt, self.apply_inv]
-        return trans_funcs
-
-
 class FurtherProcessor:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -159,12 +116,16 @@ class FurtherProcessor:
         return df
 
     def pipeline(self, df):
-        # growth_cols = [col+config['year'] for col in config['growth_features']]
+        self.logger.info(
+            'Running FurtherProcessor pipeline. Data shape: %s', df.shape)
 
         _, grow, *_ = amend_features(config)
 
         self.replace_outliers(df, "winsorize", (0.05, 0.95))
         self.replace_outliers(df[grow], 'zscore', (0.05, 0.95))
+
+        self.logger.info(
+            'FurtherProcessor pipeline complete. Data shape: %s', df.shape)
         return df
 
 
