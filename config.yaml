@@ -18,6 +18,8 @@ logging:
 data_path: data/raw/credit-risk.xlsx
 mappings_path: data/mapping/dtype_mappings.json
 
+processed: data/interim/processed.parquet
+
 ##########################################################################################
 
 # LISTS
@@ -63,3 +65,11 @@ further_features:
   - op_marg
   - asset_turnover
   - roa
+
+trans_idx:
+  - log
+  - cox1p
+  - cox
+  - sqrt
+  - inv_sqrt
+  - inv

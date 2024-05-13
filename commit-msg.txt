@@ -1,21 +1,21 @@
-Further-Processing:
+Statistical Analysis:
+- Analysis conducted on skew and kurtosis to determine optimal transforms
 
-- Further-processing and exploration is requiring further modukes and scripts than anticipated.
-- As things are getting a bit messy and long, an analysis.py pipeline script will be generated in a separate branch.
-- Further-processing will be stashed for now to build the analysis.py script
+statistics/statistical_analysis.py:
+	- New script to house exploratory statistics, including OutlierDetection, GenerateSkewAnalysis, EvaluateSkewAnalysis classes
+	- Sampling class handles generation of stratified dataframe, seed=42 added to re-generate same stratified at later stages
+	- OutlierDetection class uses IQR for basic outlier detections
+	- GenerateSkewAnalysis determins the skew and kurtosis before and after various transforms, for each cont. feature
+	- EvaluateSkewAnalysis compiles results and determins optimal transforms for each feature
+	- Results stored as .json in reports/analysis/skew_analysis/*.json and transform_map.json
 
 exploration.py:
-	- evaluate_skew method added to Analysis class
-	- transformation code included for quick view of effects (to be moved)
-	- SkewDetector class created to focus code on skew (essentially a copy of Analysis class methods)
+	- Visualiser class is the only that remains
+	- Script concerned with generating figures only
 
-procesisng.py:
-	- replace_outliers method added for quick handling of outliers
-	- pipeline method added for modularity
+processing.py:
+	- StoreTransforms stores all distribution transforms for use by other scripts, and eventually, to be applied
 
-build_features.py:
-	- Added fillna(mean) to build_growth method
-
-Further file adjustments:
-	- config.yaml: added year parameters to easily adjust post/pre COVID19
-	- config_ops.py: script for performing operations on lists/variables stored in config
+Further:
+	- trans_idx (transform_index) list stored in config
+	- Further config lists added to easily group features

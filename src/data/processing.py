@@ -6,16 +6,16 @@ import warnings
 from pathlib import Path
 
 import numpy as np
+from scipy.special import boxcox1p
+from scipy.stats import boxcox
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
-from database.db_ops import DataBaseOps
 from utils.file_handler import save_json
 from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
-creds, pg_pool, engine, conn = DataBaseOps().ops_pipeline()
 
-# ignore warnings
+
 warnings.filterwarnings("ignore")
 
 
@@ -35,8 +35,9 @@ class InitialProcessor:
 
     def map_categorical(self, df):
         self.logger.debug('Mapping categorical')
-        to_map = ['Country', 'MScore.2020', 'MScore.2019',
-                  'MScore.2018', 'MScore.2017', 'MScore.2016', 'MScore.2015']
+        to_map = [
+            'Country', 'MScore.2020', 'MScore.2019',
+            'MScore.2018', 'MScore.2017', 'MScore.2016', 'MScore.2015']
         mapping = {
             'Italy': 0, 'France': 1, 'Spain': 2, 'Germany': 3,
             'AAA': 0, 'AA': 1, 'A': 2, 'BBB': 3, 'BB': 4, 'B': 5, 'CCC': 6, 'CC': 7, 'C': 8, 'D': 9
@@ -70,6 +71,47 @@ class InitialProcessor:
         self.logger.info(
             'InitialProcessor pipeline complete. Data shape: %s', df.shape)
         return df
+
+
+class StoreTransforms:
+    def __init__(self):
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+    def apply_log(self, df, cols):
+        df[cols] = df[cols].clip(lower=0).apply(np.log1p)
+        return df
+
+    def apply_box_cox_1p(self, df, cols):
+        shifts = df[cols].min().apply(lambda x: 1 - x if x <= 0 else 0)
+        df[cols] += shifts
+        df[cols] = df[cols].apply(lambda x: boxcox1p(x, 0))
+        return df
+
+    def apply_box_cox(self, df, cols):
+        shifts = df[cols].min().apply(lambda x: 1 - x if x <= 0 else 0)
+        df[cols] += shifts
+        df[cols] = df[cols].apply(lambda x: boxcox(x, 0))
+        return df
+
+    def apply_sqrt(self, df, cols):
+        df[cols] = np.sqrt(df[cols].clip(lower=0))
+        return df
+
+    def apply_inv_sqrt(self, df, cols):
+        eps = 1e-8
+        df[cols] = 1 / np.sqrt(df[cols] + eps)
+        return df
+
+    def apply_inv(self, df, cols):
+        eps = 1e-8
+        df[cols] = 1 / (df[cols] + eps)
+        return df
+
+    def get_transform_lists(self):
+        trans_funcs = [
+            self.apply_log, self.apply_box_cox_1p, self.apply_box_cox,
+            self.apply_sqrt, self.apply_inv_sqrt, self.apply_inv]
+        return trans_funcs
 
 
 class FurtherProcessor:
@@ -118,15 +160,10 @@ class FurtherProcessor:
     def pipeline(self, df):
         # Apply outlier treatment
         self.replace_outliers(df, "winsorize", (0.05, 0.95))
-        growth_cols = df.columns[df.columns.str.contains("growth" and "2018")]
+        growth_cols = df.columns[df.columns.str.contains(
+            "growth" and config['year'])]
         self.replace_outliers(df[growth_cols], 'zscore', (0.05, 0.95))
 
-        # try to explore features in 2018 instead of 2020
-        # if skew remains, proceed as is
-        # or try inverse transform
-        # growth outliers are expected as some companies do better than avg
-
-        # self.scale_data()
         return df
 
 
