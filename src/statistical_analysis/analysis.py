@@ -7,7 +7,6 @@ import numpy as np
 from scipy.stats import kurtosis
 from scipy.stats import skew
 
-from utils.config_ops import amend_features
 from utils.file_handler import load_json
 from utils.file_handler import save_json
 from utils.setup_env import setup_project_env
@@ -99,12 +98,12 @@ class GenerateSkewAnalysis:
         filepath = Path(f'reports/analysis/skew_analysis/{file_idx}.json')
         save_json(skew_store, filepath)
 
-    def pipeline(self, df, transform_funcs):
+    def pipeline(self, df, cols, transform_funcs):
         self.logger.info(
             'Running Skew Generation and Analysis Pipeline.')
 
-        raw, grow, vol, further = amend_features(config)
-        cols = raw+grow+vol+further
+        # raw, grow, vol, further = amend_features(config)
+        # cols = raw+grow+vol+further
         for transform, idx in zip(transform_funcs, config['trans_idx']):
             self.analyze_skew_and_kurtosis(df, cols, transform, idx)
 

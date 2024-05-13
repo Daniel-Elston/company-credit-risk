@@ -1,17 +1,9 @@
-Apply Distribution Transforms:
-- Transforms have been applied to continuous variables
-- Transform algorithm decision based on transform mapping created in analysis.py: See ``reports/analysis/transform_map.json``
+Passing Discrete:
+- Passing newly formed discrete/continuous variable list
+- Instead of generating sample year cols (cont. variables for a single year), continuous cols for all years generated and passed to:
+	- analysis.py
+	- transforms.py
 
-pipeline.py:
-	- Added continuous and discrete class instances (lists of cont/disc cols)
-	- Added apply_transforms method
-	- Added extra runs of exploration to view raw, outlier removed, and dist. transformed datasets
-
-processing.py
-	- Removed StoreTransforms class -> transforms.py script
-
-transforms.py: *new*
-	- Script for storing and applying transformations
-
-config_ops.py
-	- Added mmethods to amend all years to features, and get continuous_discrete columns
+transforms.py:
+	- added calc_skew helper and apply_transforms method
+	- cleaned pipeline method

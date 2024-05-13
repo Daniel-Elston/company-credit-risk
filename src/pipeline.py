@@ -44,7 +44,7 @@ class DataPipeline:
         """Builds features"""
         build = BuildFeatures()
         self.df = build.pipeline(self.df, self.metric_cols, self.date_cols)
-        self.continuous, self.discrete = continuous_discrete(config, self.df)
+        self.cont, self.disc = continuous_discrete(config, self.df)
 
     def run_exploration(self, run_number):
         """Visualise Stratified Data"""
@@ -60,11 +60,11 @@ class DataPipeline:
     def run_statistical_analysis(self):
         """Run statistical analysis"""
         self.trans_map, self.trans_funcs = StoreTransforms().get_transform_info()
-        GenerateSkewAnalysis().pipeline(self.df, self.trans_funcs)
+        GenerateSkewAnalysis().pipeline(self.df, self.cont, self.trans_funcs)
         EvaluateSkewAnalysis().pipeline()
 
     def apply_transforms(self):
-        self.df = ApplyTransforms().pipeline(self.df, self.trans_map)
+        self.df = ApplyTransforms().pipeline(self.df, self.cont, self.trans_map)
 
     def main(self):
         self.run_make_dataset()
@@ -72,12 +72,12 @@ class DataPipeline:
         self.run_initial_processing()
         self.run_feature_engineering()
 
-        self.run_exploration(run_number=1)
-        self.run_further_processing()
-        self.run_exploration(run_number=2)
-        self.run_statistical_analysis()
-        self.apply_transforms()
-        self.run_exploration(run_number=3)
+        # self.run_exploration(run_number=1)
+        # self.run_further_processing()
+        # self.run_exploration(run_number=2)
+        # self.run_statistical_analysis()
+        # self.apply_transforms()
+        # self.run_exploration(run_number=3)
 
 
 if __name__ == '__main__':

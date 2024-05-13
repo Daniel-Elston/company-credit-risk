@@ -7,7 +7,6 @@ from scipy.special import boxcox1p
 from scipy.stats import boxcox
 from scipy.stats import skew
 
-from utils.config_ops import amend_features
 from utils.file_handler import load_json
 from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
@@ -76,25 +75,32 @@ class ApplyTransforms:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def apply_transformation(self, df, cols, transform_func):
-        return transform_func(df, cols)
+    def calc_skew(self, df):
+        return round((skew(df)).mean(), 2)
 
-    def pipeline(self, df, trans_map):
+    def apply_transforms(self, df_transform, optimal_transforms, trans_map):
+        for col, (transform, _) in optimal_transforms.items():
+            if transform in trans_map:
+                df_transform = trans_map[transform](df_transform, col)
+            else:
+                self.logger.error('Transform not found: %s', transform)
+                raise ValueError
+        return df_transform
+
+    def pipeline(self, df, cols, trans_map):
         self.logger.info(
             'Applying Distribution Transformations.')
         optimal_transforms = load_json('reports/analysis/transform_map.json')
 
-        raw, grow, vol, further = amend_features(config)
-        cols = raw+grow+vol+further
         df_transform = df[cols]
+        pre_transform_skew = self.calc_skew(df_transform)
 
-        pre_transform_skew = round((skew(df_transform)).mean(), 2)
-        for col, (transform, _) in optimal_transforms.items():
-            if transform in trans_map:
-                df_transform = trans_map[transform](df_transform, col)
-        post_transform_skew = round((skew(df_transform)).mean(), 2)
+        df_transform = self.apply_transforms(
+            df_transform, optimal_transforms, trans_map)
 
+        post_transform_skew = self.calc_skew(df_transform)
         df[cols] = df_transform[cols]
+
         self.logger.info(
             'Transforms applied. Pre-transform skew: %s. Post-transform skew: %s', pre_transform_skew, post_transform_skew)
         return df

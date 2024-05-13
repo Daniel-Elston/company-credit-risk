@@ -66,6 +66,7 @@ class Visualiser:
     def pipeline(self, df, run_number):
         self.logger.info(
             f'Running Visualiser Pipeline. Run Number {run_number}...')
+
         self.exploration_filing(run_number)
         raw, grow, vol, further = amend_features(config)
 
@@ -76,6 +77,5 @@ class Visualiser:
                                     run_number}/corr_map_{j}')
         # self.generate_heat_plot(df, [raw+grow+vol+further], f'exploration_{run_number}/corr_map_all')
 
-        # self.generate_trends(df.sample(1000), 'EBIT', date_cols)
         self.logger.info(
             f'Visualiser Pipeline Completed. Figures saved to: ``{config['exploration_figs']}/exploration_{run_number}/*.png``')
