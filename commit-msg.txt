@@ -1,21 +1,17 @@
-Statistical Analysis:
-- Analysis conducted on skew and kurtosis to determine optimal transforms
+Exploration Filing Adjustments:
+- Adding code to file figures dynamically, depending on exploration run number
 
-statistics/statistical_analysis.py:
-	- New script to house exploratory statistics, including OutlierDetection, GenerateSkewAnalysis, EvaluateSkewAnalysis classes
-	- Sampling class handles generation of stratified dataframe, seed=42 added to re-generate same stratified at later stages
-	- OutlierDetection class uses IQR for basic outlier detections
-	- GenerateSkewAnalysis determins the skew and kurtosis before and after various transforms, for each cont. feature
-	- EvaluateSkewAnalysis compiles results and determins optimal transforms for each feature
-	- Results stored as .json in reports/analysis/skew_analysis/*.json and transform_map.json
-
-exploration.py:
-	- Visualiser class is the only that remains
-	- Script concerned with generating figures only
+pipeline.py:
+	- Removed generate_stratified_sample method, only used for exploration so included in run_exploration method
+	- Added run_number argument for run_exploration. Index for data visual / progress
 
 processing.py:
-	- StoreTransforms stores all distribution transforms for use by other scripts, and eventually, to be applied
+	- Amended method for getting growth_features in year 2018
+	- Now using updated method of feature retrieval
 
-Further:
-	- trans_idx (transform_index) list stored in config
-	- Further config lists added to easily group features
+exploration.py:
+	- exploration_filing method added
+	- We can now store figures from exploration of data before and after processing, for example
+	- method checks for exploration run number directory, adds if does not exist
+	- Figures are then stored in corresponding run number dir
+	- Adjusted file save paths

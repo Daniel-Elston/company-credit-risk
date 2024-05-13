@@ -11,6 +11,7 @@ from scipy.stats import boxcox
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
+from utils.config_ops import amend_features
 from utils.file_handler import save_json
 from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
@@ -158,12 +159,12 @@ class FurtherProcessor:
         return df
 
     def pipeline(self, df):
-        # Apply outlier treatment
-        self.replace_outliers(df, "winsorize", (0.05, 0.95))
-        growth_cols = df.columns[df.columns.str.contains(
-            "growth" and config['year'])]
-        self.replace_outliers(df[growth_cols], 'zscore', (0.05, 0.95))
+        # growth_cols = [col+config['year'] for col in config['growth_features']]
 
+        _, grow, *_ = amend_features(config)
+
+        self.replace_outliers(df, "winsorize", (0.05, 0.95))
+        self.replace_outliers(df[grow], 'zscore', (0.05, 0.95))
         return df
 
 

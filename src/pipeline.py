@@ -35,23 +35,24 @@ class DataPipeline:
 
     def run_initial_processing(self):
         """Removes NaNs, duplicates and encodes categorical features"""
-        process = InitialProcessor()
-        self.df = process.pipeline(self.df)
+        initial_process = InitialProcessor()
+        self.df = initial_process.pipeline(self.df)
 
     def run_feature_engineering(self):
         """Builds features"""
         build = BuildFeatures()
         self.df = build.pipeline(self.df, self.metric_cols, self.date_cols)
 
-    def generate_stratified_sample(self):
-        """Generate stratified sample"""
-        sample = Sampling()
-        self.df_stratified = sample.stratified_random_sample(self.df)
+    # def generate_stratified_sample(self):
+    #     """Generate stratified sample"""
+    #     sample = Sampling()
+    #     self.df_stratified = Sampling().stratified_random_sample(self.df)
 
-    def run_exploration(self):
+    def run_exploration(self, run_number):
         """Visualise Stratified Data"""
+        df_stratified = Sampling().stratified_random_sample(self.df)
         visual = Visualiser()
-        visual.pipeline(self.df_stratified)
+        visual.pipeline(df_stratified, run_number)
 
     def run_further_processing(self):
         """Remove outliers"""
@@ -72,12 +73,13 @@ class DataPipeline:
         self.run_quality_assessment()
         self.run_initial_processing()
         self.run_feature_engineering()
-        self.generate_stratified_sample()
-        self.run_exploration()
+
+        # self.generate_stratified_sample()
+        self.run_exploration(run_number=1)
         self.run_further_processing()
-        # self.run_exploration()
+        self.run_exploration(2)
         self.run_statistical_analysis()
-        # self.run_exploration()
+        self.run_exploration(3)
 
 
 if __name__ == '__main__':

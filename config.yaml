@@ -17,7 +17,7 @@ logging:
 # PATHS
 data_path: data/raw/credit-risk.xlsx
 mappings_path: data/mapping/dtype_mappings.json
-
+exploration_figs: reports/figures
 processed: data/interim/processed.parquet
 
 ##########################################################################################
