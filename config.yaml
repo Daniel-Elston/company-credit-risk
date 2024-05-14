@@ -24,6 +24,7 @@ path:
   exploration: reports/figures
   skew: reports/analysis/skew_analysis
   maps: reports/analysis/maps
+  eigen: reports/analysis/eigenvalues
 
 ##########################################################################################
 

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
+
+import pandas as pd
 
 from src.data.make_dataset import LoadData
 from src.data.processing import FurtherProcessor
@@ -10,6 +13,7 @@ from src.features.build_features import BuildFeatures
 from src.statistical_analysis.analysis_utils import Sampling
 from src.statistical_analysis.correlations import EvaluateCorrAnalysis
 from src.statistical_analysis.correlations import GenerateCorrAnalysis
+from src.statistical_analysis.eiganvalues import AnalyseEigenValues
 from src.statistical_analysis.skew_kurtosis import EvaluateSkewAnalysis
 from src.statistical_analysis.skew_kurtosis import GenerateSkewAnalysis
 from src.statistical_analysis.transforms import ApplyTransforms
@@ -25,7 +29,7 @@ project_dir, config, setup_logs = setup_project_env()
 class DataPipeline:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        # self.df = pd.read_parquet(Path('data/interim/processed.parquet'))
+        self.df = pd.read_parquet(Path('data/interim/trans_processed.parquet'))
 
     # @staticmethod
     def run_make_dataset(self):
@@ -67,24 +71,27 @@ class DataPipeline:
         EvaluateSkewAnalysis().pipeline()
 
     def apply_transforms(self):
+        """Apply transformations"""
         self.df = ApplyTransforms().pipeline(self.df, self.cont, self.trans_map)
 
     def run_statistical_evaluations(self):
-        diff12, diff23, diff13 = EvaluateCorrAnalysis().pipeline()
+        EvaluateCorrAnalysis().pipeline()
+        AnalyseEigenValues().pipeline()
 
     def main(self):
-        self.run_make_dataset()
-        self.run_quality_assessment()
-        self.run_initial_processing()
-        self.run_feature_engineering()
+        # self.run_make_dataset()
+        # self.run_quality_assessment()
+        # self.run_initial_processing()
+        # self.run_feature_engineering()
 
-        self.run_exploration(run_number=1)
-        self.run_further_processing()
-        self.run_exploration(run_number=2)
-        self.run_statistical_analysis()
-        self.apply_transforms()
-        self.run_exploration(run_number=3)
+        # self.run_exploration(run_number=1)
+        # self.run_further_processing()
+        # self.run_exploration(run_number=2)
+        # self.run_statistical_analysis()
+        # self.apply_transforms()
+        # self.run_exploration(run_number=3)
 
+        # trans_processed.parquet
         self.run_statistical_evaluations()
 
 

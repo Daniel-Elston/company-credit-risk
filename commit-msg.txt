@@ -1,9 +1,7 @@
-Fronebius Norm:
-- Evaluating the evolution of correlation metrics over processing stages
-- File / class restructuring
-- General logging and file path file paths and logging
+Eigenvalues:
+- Eigenvalue analysis included for future PCA decision making
 
-New files / file renaming:
-	- analysis_utils.py
-	- correlations.py for correlation analysis (including frobenius)
-	- skew_kurtosis.py
+eigenvalues.py:
+	- AnalyseEigenValues class created
+	- Generates eigenvalues.json
+	- Generates and plots scree plots

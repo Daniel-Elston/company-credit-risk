@@ -23,8 +23,8 @@ class GenerateCorrAnalysis:
         return data
 
     def corr_frobenius_norm(self, data, run_number):
-        sum_corr = round(data.abs().sum().sum() -
-                         np.trace(data.abs().to_numpy()), 4)
+        sum_corr = round(
+            data.abs().sum().sum() - np.trace(data.abs().to_numpy()), 4)
 
         total_elements = data.size - len(data)
         avg_corr = round(sum_corr / total_elements, 4)
@@ -39,10 +39,6 @@ class GenerateCorrAnalysis:
         filepath = Path(
             f'{config['path']['correlation']}/corr_fro_results_{run_number}.json')
         save_json(store, filepath)
-
-    # def corr_eigenvalues(self, data, run_number):
-    #     corr_eig = np.linalg.eigvals(data)
-    #     return corr_eig
 
     def pipeline(self, run_number):
         self.logger.info(
@@ -71,7 +67,6 @@ class EvaluateCorrAnalysis:
         diff12 = round(fro_store[1] - fro_store[0], 4)
         diff23 = round(fro_store[2] - fro_store[1], 4)
         diff13 = round(fro_store[2] - fro_store[0], 4)
-
         return diff12, diff23, diff13
 
     def pipeline(self):
@@ -81,4 +76,3 @@ class EvaluateCorrAnalysis:
 
         self.logger.info(
             'Correlation Analysis Completed. Frobenius Norm Differences: %s', diff13)
-        return diff12, diff23, diff13
