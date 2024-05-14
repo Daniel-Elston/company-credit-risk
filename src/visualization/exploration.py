@@ -11,7 +11,6 @@ from utils.setup_env import setup_project_env
 # from utils.config_ops import amend_features
 sns.set_theme(style="darkgrid")
 project_dir, config, setup_logs = setup_project_env()
-# import statistics
 
 
 class Visualiser:
@@ -44,6 +43,7 @@ class Visualiser:
         plt.title(f'Correlation Matrix Heatmap for {
                   title} Financial Metrics {config['year']}')
         plt.savefig(Path(f'{config['exploration_figs']}/{title}.png'))
+        return correlation_matrix
 
     def generate_trends(self, df, metric: str, date_cols):
         cols = [f'{metric}.{year}' for year in date_cols]
@@ -65,13 +65,16 @@ class Visualiser:
 
     def amend_col_lists(self, cont):
         volatil_cols = cont[cont.str.contains('volatility')]
-        raw_cols = ['Turnover.2018', 'EBIT.2018', 'PLTax.2018',
-                    'Leverage.2018', 'ROE.2018', 'TAsset.2018']
-        growth_cols = ['growth_Leverage.2018', 'growth_EBIT.2018', 'growth_TAsset.2018',
-                       'growth_PLTax.2018', 'growth_ROE.2018', 'growth_Turnover.2018']
-        further_cols = ['debt_to_eq2018', 'op_marg2018',
-                        'asset_turnover2018', 'roa2018']
-        corr_cols = ['growth_MScore.2018', 'MScore.2018', 'volatility_MScore']
+        raw_cols = [
+            'Turnover.2018', 'EBIT.2018', 'PLTax.2018',
+            'Leverage.2018', 'ROE.2018', 'TAsset.2018']
+        growth_cols = [
+            'growth_Leverage.2018', 'growth_EBIT.2018', 'growth_TAsset.2018',
+            'growth_PLTax.2018', 'growth_ROE.2018', 'growth_Turnover.2018']
+        further_cols = [
+            'debt_to_eq2018', 'op_marg2018', 'asset_turnover2018', 'roa2018']
+        corr_cols = [
+            'growth_MScore.2018', 'MScore.2018', 'volatility_MScore']
 
         dist_store = [raw_cols, volatil_cols, growth_cols, further_cols]
         dist_names = ['raw', 'vol', 'grow', 'further']
@@ -97,10 +100,12 @@ class Visualiser:
             self.generate_heat_plot(df, i, f'exploration_{
                                     run_number}/corr_map_{j}')
 
-        combined_cols = list(corr_store[0]) + list(corr_store[1]) + list(
-            corr_store[2]) + list(corr_store[3]) + list(corr_store[4])
-        self.generate_heat_plot(df, combined_cols, f'exploration_{
-                                run_number}/corr_map_all')
+        combined_cols = list(corr_store[0]) + list(corr_store[1]) + \
+            list(corr_store[2]) + list(corr_store[3]) + list(corr_store[4])
+        corr_mat = self.generate_heat_plot(df, combined_cols, f'exploration_{
+                                           run_number}/corr_map_all')
+        corr_mat.to_csv(
+            Path(f'reports/analysis/correlation/exploration_{run_number}.csv'))
 
         self.logger.info(
             f'Visualiser Pipeline Completed. Figures saved to: ``{config['exploration_figs']}/exploration_{run_number}/*.png``')

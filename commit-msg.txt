@@ -1,3 +1,9 @@
-Passing Discrete - exploration.py:
-- Added amend_cols_list method to generate list of cols and names for plotting
-- Fixed main.py
+Fronebius Norm:
+- Evaluating the evolution of correlation metrics over processing stages
+- File / class restructuring
+- General logging and file path file paths and logging
+
+New files / file renaming:
+	- analysis_utils.py
+	- correlations.py for correlation analysis (including frobenius)
+	- skew_kurtosis.py

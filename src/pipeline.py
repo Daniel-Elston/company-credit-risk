@@ -7,9 +7,11 @@ from src.data.processing import FurtherProcessor
 from src.data.processing import InitialProcessor
 from src.data.quality_assessment import QualityAssessment
 from src.features.build_features import BuildFeatures
-from src.statistical_analysis.analysis import EvaluateSkewAnalysis
-from src.statistical_analysis.analysis import GenerateSkewAnalysis
-from src.statistical_analysis.analysis import Sampling
+from src.statistical_analysis.analysis_utils import Sampling
+from src.statistical_analysis.correlations import EvaluateCorrAnalysis
+from src.statistical_analysis.correlations import GenerateCorrAnalysis
+from src.statistical_analysis.skew_kurtosis import EvaluateSkewAnalysis
+from src.statistical_analysis.skew_kurtosis import GenerateSkewAnalysis
 from src.statistical_analysis.transforms import ApplyTransforms
 from src.statistical_analysis.transforms import StoreTransforms
 from src.visualization.exploration import Visualiser
@@ -51,6 +53,7 @@ class DataPipeline:
         df_stratified = Sampling().stratified_random_sample(self.df)
         visual = Visualiser()
         visual.pipeline(df_stratified, self.cont, run_number)
+        GenerateCorrAnalysis().pipeline(run_number)
 
     def run_further_processing(self):
         """Remove outliers"""
@@ -66,6 +69,9 @@ class DataPipeline:
     def apply_transforms(self):
         self.df = ApplyTransforms().pipeline(self.df, self.cont, self.trans_map)
 
+    def run_statistical_evaluations(self):
+        diff12, diff23, diff13 = EvaluateCorrAnalysis().pipeline()
+
     def main(self):
         self.run_make_dataset()
         self.run_quality_assessment()
@@ -78,6 +84,8 @@ class DataPipeline:
         self.run_statistical_analysis()
         self.apply_transforms()
         self.run_exploration(run_number=3)
+
+        self.run_statistical_evaluations()
 
 
 if __name__ == '__main__':

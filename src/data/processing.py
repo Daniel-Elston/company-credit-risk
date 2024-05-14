@@ -54,7 +54,7 @@ class InitialProcessor:
         sector_map = {category: idx for idx,
                       category in enumerate(label_encoder.classes_)}
 
-        filepath = Path('reports/analysis/sector_map.json')
+        filepath = Path('reports/analysis/maps/sector_map.json')
         if os.path.isfile(filepath):
             pass
         else:
@@ -116,7 +116,7 @@ class FurtherProcessor:
         return df
 
     def pipeline(self, df):
-        self.logger.info(
+        self.logger.debug(
             'Running FurtherProcessor pipeline. Data shape: %s', df.shape)
 
         _, grow, *_ = amend_features(config)
@@ -124,7 +124,7 @@ class FurtherProcessor:
         self.replace_outliers(df, "winsorize", (0.05, 0.95))
         self.replace_outliers(df[grow], 'zscore', (0.05, 0.95))
 
-        self.logger.info(
+        self.logger.debug(
             'FurtherProcessor pipeline complete. Data shape: %s', df.shape)
         return df
 

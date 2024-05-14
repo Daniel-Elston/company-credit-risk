@@ -53,11 +53,11 @@ class BuildFeatures:
         return df
 
     def pipeline(self, df, metric_cols, date_cols):
-        self.logger.info(
+        self.logger.debug(
             'Running BuildFeatures pipeline. Dataframe shape: %s', df.shape)
         df = self.build_growth(df, metric_cols, date_cols)
         df = self.build_volatility(df, metric_cols, date_cols)
         df = self.build_metrics(df, date_cols)
-        self.logger.info(
+        self.logger.debug(
             'BuildFeatures pipeline complete. New dataframe shape: %s', df.shape)
         return df

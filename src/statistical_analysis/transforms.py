@@ -90,7 +90,8 @@ class ApplyTransforms:
     def pipeline(self, df, cols, trans_map):
         self.logger.info(
             'Applying Distribution Transformations.')
-        optimal_transforms = load_json('reports/analysis/transform_map.json')
+        optimal_transforms = load_json(
+            'reports/analysis/maps/transform_map.json')
 
         df_transform = df[cols]
         pre_transform_skew = self.calc_skew(df_transform)

@@ -56,8 +56,8 @@ class QualityAssessment:
         report_df = pd.DataFrame(report_data, index=df.columns)
         statistics_df = round(df.describe(), 2)
 
-        report_path = Path(f'reports/analysis/{report_name}')
-        statistics_path = Path(f'reports/analysis/{info_name}')
+        report_path = Path(f'reports/analysis/eval_reports/{report_name}')
+        statistics_path = Path(f'reports/analysis/eval_reports/{info_name}')
 
         if os.path.isfile(report_path):
             pass
