@@ -39,7 +39,7 @@ class GenerateSkewAnalysis:
             }
             skew_store.append(skew_dict)
 
-        filepath = Path(f'reports/analysis/skew_analysis/{file_idx}.json')
+        filepath = Path(f'{config['path']['skew']}/{file_idx}.json')
         save_json(skew_store, filepath)
 
     def pipeline(self, df, cols, transform_funcs):
@@ -50,7 +50,7 @@ class GenerateSkewAnalysis:
             self.analyze_skew_and_kurtosis(df, cols, transform, idx)
 
         self.logger.info(
-            'Skew Generation and Analysis Pipeline Completed. Data saved to: ``reports/analysis/skew_analysis/*.json``')
+            f'Skew Generation and Analysis Pipeline Completed. Data saved to: ``{config['path']['skew']}/*.json``')
 
 
 class EvaluateSkewAnalysis:
@@ -60,7 +60,7 @@ class EvaluateSkewAnalysis:
     def load_results(self):
         results = {}
         for transform in config['trans_idx']:
-            filepath = Path(f'reports/analysis/skew_analysis/{transform}.json')
+            filepath = Path(f'{config['path']['skew']}/{transform}.json')
             data = load_json(filepath)
             results[transform] = data
         return results
@@ -90,17 +90,17 @@ class EvaluateSkewAnalysis:
             optimal_transforms[column] = (
                 optimal_transform, transforms[optimal_transform])
 
-            filepath = Path('reports/analysis/maps/transform_map.json')
+            filepath = Path(f'{config['path']['skew']}/transform_map.json')
             save_json(optimal_transforms, filepath)
         return optimal_transforms
 
     def pipeline(self):
         self.logger.info(
-            'Running Skew Evaluation and Analysis Pipeline. Analysing files: ``reports/analysis/skew_analysis/*.json`')
+            f'Running Skew Evaluation and Analysis Pipeline. Analysing files: ``{config['path']['skew']}/*.json`')
 
         results = self.load_results()
         compiled_data = self.compile_transform_data(results)
         self.get_optimal_transform(compiled_data)
 
         self.logger.info(
-            'Skew Evaluation and Analysis Pipeline Completed. Results saved to: ``reports/analysis/maps/transform_map.json``')
+            f'Skew Evaluation and Analysis Pipeline Completed. Results saved to: ``{config['path']['maps']}/transform_map.json``')

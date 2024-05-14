@@ -54,7 +54,7 @@ class InitialProcessor:
         sector_map = {category: idx for idx,
                       category in enumerate(label_encoder.classes_)}
 
-        filepath = Path('reports/analysis/maps/sector_map.json')
+        filepath = Path(f'{config['path']['sector_map']}/sector_map.json')
         if os.path.isfile(filepath):
             pass
         else:

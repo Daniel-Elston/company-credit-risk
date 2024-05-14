@@ -29,7 +29,7 @@ class Visualiser:
         sns.pairplot(
             select_metrics, diag_kind='kde',
             plot_kws={'alpha': 0.8, 's': 2, 'edgecolor': 'k'})
-        plt.savefig(Path(f'{config['exploration_figs']}/{title}.png'))
+        plt.savefig(Path(f'{config['path']['exploration']}/{title}.png'))
 
     def generate_heat_plot(self, df, cols, title):
         correlation_data = df[cols]
@@ -42,7 +42,7 @@ class Visualiser:
             annot_kws={"size": 8})
         plt.title(f'Correlation Matrix Heatmap for {
                   title} Financial Metrics {config['year']}')
-        plt.savefig(Path(f'{config['exploration_figs']}/{title}.png'))
+        plt.savefig(Path(f'{config['path']['exploration']}/{title}.png'))
         return correlation_matrix
 
     def generate_trends(self, df, metric: str, date_cols):
@@ -53,10 +53,11 @@ class Visualiser:
         plt.title(f'{metric} Trends Over Years')
         plt.xlabel('Year')
         plt.ylabel(f'{metric}')
-        plt.savefig(Path(f'{config['exploration_figs']}/{metric}_trends.png'))
+        plt.savefig(
+            Path(f'{config['path']['exploration']}/{metric}_trends.png'))
 
     def exploration_filing(self, run_number):
-        dir_path = f'{config['exploration_figs']}/exploration_{run_number}'
+        dir_path = f'{config['path']['exploration']}/exploration_{run_number}'
         if os.path.isdir(dir_path):
             pass
         else:
@@ -105,7 +106,7 @@ class Visualiser:
         corr_mat = self.generate_heat_plot(df, combined_cols, f'exploration_{
                                            run_number}/corr_map_all')
         corr_mat.to_csv(
-            Path(f'reports/analysis/correlation/exploration_{run_number}.csv'))
+            Path(f'{config['path']['correlation']}/exploration_{run_number}.csv'))
 
         self.logger.info(
-            f'Visualiser Pipeline Completed. Figures saved to: ``{config['exploration_figs']}/exploration_{run_number}/*.png``')
+            f'Visualiser Pipeline Completed. Figures saved to: ``{config['path']['exploration']}/exploration_{run_number}/*.png``')

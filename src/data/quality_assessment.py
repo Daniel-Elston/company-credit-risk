@@ -6,6 +6,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from utils.setup_env import setup_project_env
+project_dir, config, setup_logs = setup_project_env()
+
 
 class QualityAssessment:
     def __init__(self):
@@ -14,7 +17,7 @@ class QualityAssessment:
     def generate_exploratory_report(self, df, report_name, info_name):
         """Generate exploratory report"""
         self.logger.info(
-            'Generating exploratory report. See results in ``reports/analysis/`` directory')
+            f'Generating exploratory report. See results in ``{config['path']['eval_report']}`` directory')
         report_data = {
             'Data_Type': [],
             'Zero_Count': [],
@@ -56,8 +59,8 @@ class QualityAssessment:
         report_df = pd.DataFrame(report_data, index=df.columns)
         statistics_df = round(df.describe(), 2)
 
-        report_path = Path(f'reports/analysis/eval_reports/{report_name}')
-        statistics_path = Path(f'reports/analysis/eval_reports/{info_name}')
+        report_path = Path(f'{config['path']['eval_report']}/{report_name}')
+        statistics_path = Path(f'{config['path']['eval_report']}/{info_name}')
 
         if os.path.isfile(report_path):
             pass

@@ -91,7 +91,7 @@ class ApplyTransforms:
         self.logger.info(
             'Applying Distribution Transformations.')
         optimal_transforms = load_json(
-            'reports/analysis/maps/transform_map.json')
+            f'{config['path']['skew']}/transform_map.json')
 
         df_transform = df[cols]
         pre_transform_skew = self.calc_skew(df_transform)

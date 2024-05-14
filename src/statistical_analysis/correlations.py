@@ -18,7 +18,7 @@ class GenerateCorrAnalysis:
 
     def load_corr_store(self, run_number):
         filepath = Path(
-            f'reports/analysis/correlation/exploration_{run_number}.csv')
+            f'{config['path']['correlation']}/exploration_{run_number}.csv')
         data = pd.read_csv(filepath, index_col=0)
         return data
 
@@ -37,7 +37,7 @@ class GenerateCorrAnalysis:
             'fro': frobenius_norm,
         }
         filepath = Path(
-            f'reports/analysis/correlation/corr_fro_results_{run_number}.json')
+            f'{config['path']['correlation']}/corr_fro_results_{run_number}.json')
         save_json(store, filepath)
 
     # def corr_eigenvalues(self, data, run_number):
@@ -46,13 +46,13 @@ class GenerateCorrAnalysis:
 
     def pipeline(self, run_number):
         self.logger.info(
-            'Generating Correlation Analysis. Analysing files: ``reports/analysis/correlation/exploration_n.csv``')
+            f'Generating Correlation Analysis. Analysing files: ``{config['path']['correlation']}/exploration_n.csv``')
 
         data = self.load_corr_store(run_number)
         self.corr_frobenius_norm(data, run_number)
 
         self.logger.info(
-            'Correlation Analysis Completed. Results saved to: ``reports/analysis/correlation/corr_fro_results_n.json``')
+            f'Correlation Analysis Completed. Results saved to: ``{config['path']['correlation']}/corr_fro_results_n.json``')
 
 
 class EvaluateCorrAnalysis:
@@ -63,7 +63,7 @@ class EvaluateCorrAnalysis:
         fro_store = []
         for i in range(1, 4):
             filepath = Path(
-                f'reports/analysis/correlation/corr_fro_results_{i}.json')
+                f'{config['path']['correlation']}/corr_fro_results_{i}.json')
             data = load_json(filepath)
             frobenius_norm = data['fro']
             fro_store.append(frobenius_norm)
@@ -76,9 +76,9 @@ class EvaluateCorrAnalysis:
 
     def pipeline(self):
         self.logger.info(
-            'Evaluating Correlation Analysis. Analysing files: ``reports/analysis/correlation/corr_fro_results_n.json``')
+            f'Evaluating Correlation Analysis. Analysing files: ``{config['path']['correlation']}/corr_fro_results_n.json``')
         diff12, diff23, diff13 = self.get_fro_diff()
 
         self.logger.info(
-            'Correlation Analysis Completed. Frobenius Norm Differences: 12 = %s, 23 = %s, 13 = %s', diff12, diff23, diff13)
+            'Correlation Analysis Completed. Frobenius Norm Differences: %s', diff13)
         return diff12, diff23, diff13
