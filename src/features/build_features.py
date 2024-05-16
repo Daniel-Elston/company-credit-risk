@@ -42,13 +42,13 @@ class BuildFeatures:
     def build_metrics(self, df, date_cols):
         eps = 1e-6
         for year in date_cols:
-            df[f'debt_to_eq{year}'] = df[f'TAsset.{year}'] / \
+            df[f'fur_debt_to_eq{year}'] = df[f'TAsset.{year}'] / \
                 (df[f'TAsset.{year}'] - df[f'Leverage.{year}'] + eps)
-            df[f'op_marg{year}'] = df[f'EBIT.{year}'] / \
+            df[f'fur_op_marg{year}'] = df[f'EBIT.{year}'] / \
                 (df[f'Turnover.{year}'] + eps)
-            df[f'asset_turnover{year}'] = df[f'Turnover.{
+            df[f'fur_asset_turnover{year}'] = df[f'Turnover.{
                 year}'] / (df[f'TAsset.{year}'] + eps)
-            df[f'roa{year}'] = df[f'EBIT.{year}'] / \
+            df[f'fur_roa{year}'] = df[f'EBIT.{year}'] / \
                 (df[f'TAsset.{year}'] + eps)
         return df
 

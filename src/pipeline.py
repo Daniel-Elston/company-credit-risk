@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 from src.data.make_dataset import LoadData
 from src.data.processing import InitialProcessor
@@ -18,6 +19,8 @@ from src.statistical_analysis.transforms import StoreTransforms
 from src.visualization.exploration import Visualiser
 from utils.config_ops import continuous_discrete
 from utils.setup_env import setup_project_env
+# import pandas as pd
+# from utils.config_ops import get_feature_columns
 # from src.data.processing import FurtherProcessor
 # from utils.file_handler import load_json
 # from utils.file_handler import save_json
@@ -89,6 +92,7 @@ class DataPipeline:
         self.run_exploration(run_number='0')
 
         self.run_handle_outliers()
+        self.df.to_parquet(Path('data/interim/df_outliers_rem.parquet'))
         self.run_exploration(run_number='1')
 
         self.run_distribution_analysis()
@@ -100,6 +104,11 @@ class DataPipeline:
         self.apply_transforms()
         self.run_exploration(run_number='3')
         self.run_correlation_analysis()
+
+        # grow = get_feature_columns(self.cont, 'growth_', '2018', period=False)
+        # raw = get_feature_columns(self.cont, '', '2018', period=True)
+        # vol = get_feature_columns(self.cont, 'volatility', 'all', period=False)
+        # further = get_feature_columns(self.cont, 'further', 'all', period=False)
 
 
 if __name__ == '__main__':

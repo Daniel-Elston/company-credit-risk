@@ -54,7 +54,7 @@ def amend_col_lists(cont):
         'growth_Leverage2018', 'growth_EBIT2018', 'growth_TAsset2018',
         'growth_PLTax2018', 'growth_ROE2018', 'growth_Turnover2018']
     further_cols = [
-        'debt_to_eq2018', 'op_marg2018', 'asset_turnover2018', 'roa2018']
+        'fur_debt_to_eq2018', 'fur_op_marg2018', 'fur_asset_turnover2018', 'fur_roa2018']
     corr_cols = [
         'growth_MScore2018', 'MScore.2018', 'volatility_MScore']
 
@@ -71,13 +71,18 @@ def amend_col_lists(cont):
     return dist_store, dist_names, corr_store, corr_names, combined_cols
 
 
-def get_feature_columns(cont_cols, feature_name, contains_period):
+def get_feature_columns(cont_cols, feature_name, dates, period):
     feature_name_escaped = re.escape(feature_name)
 
-    if contains_period:
+    if period:
         pattern = rf'\b{feature_name_escaped}\.'
     else:
         pattern = rf'{feature_name}'
 
     feature_cols = [col for col in cont_cols if re.search(pattern, col)]
-    return feature_cols
+
+    if dates == 'all':
+        return feature_cols
+    else:
+        filtered = [col for col in feature_cols if dates in col]
+    return filtered

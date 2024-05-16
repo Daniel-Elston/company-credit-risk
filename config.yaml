@@ -1,7 +1,7 @@
 # my_config.yaml
 
 # PARAMETERS
-year: '2018'
+year: '2020'
 
 ##########################################################################################
 
@@ -74,10 +74,10 @@ volatility_features:
   - volatility_ROE
 
 further_features:
-  - debt_to_eq
-  - op_marg
-  - asset_turnover
-  - roa
+  - fur_debt_to_eq
+  - fur_op_marg
+  - fur_asset_turnover
+  - fur_roa
 
 trans_idx:
   - log
