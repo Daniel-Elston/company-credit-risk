@@ -17,8 +17,7 @@ class GenerateCorrAnalysis:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def load_corr_store(self, run_number):
-        filepath = Path(
-            f'{config['path']['correlation']}/exploration_{run_number}.csv')
+        filepath = Path(f'{config['path']['correlation']}/exploration_{run_number}.csv')
         data = pd.read_csv(filepath, index_col=0)
         return data
 
@@ -36,8 +35,7 @@ class GenerateCorrAnalysis:
             'avg': avg_corr,
             'fro': frobenius_norm,
         }
-        filepath = Path(
-            f'{config['path']['correlation']}/corr_fro_results_{run_number}.json')
+        filepath = Path(f'{config['path']['correlation']}/corr_fro_results_{run_number}.json')
         save_json(store, filepath)
 
     def pipeline(self, run_number):
@@ -58,8 +56,7 @@ class EvaluateCorrAnalysis:
     def get_fro_diff(self):
         fro_store = []
         for i in range(1, 4):
-            filepath = Path(
-                f'{config['path']['correlation']}/corr_fro_results_{i}.json')
+            filepath = Path(f'{config['path']['correlation']}/corr_fro_results_{i}.json')
             data = load_json(filepath)
             frobenius_norm = data['fro']
             fro_store.append(frobenius_norm)

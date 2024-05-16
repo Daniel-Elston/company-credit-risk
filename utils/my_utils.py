@@ -13,8 +13,7 @@ def stratified_random_sample(df, seed=42):
 
 
 def continuous_discrete(config, df):
-    cols = config['raw_features']+config['growth_features'] + \
-        config['volatility_features']+config['further_features']
+    cols = config['raw_features']+config['growth_features']+config['volatility_features']+config['further_features']
     discrete = df.columns[~df.columns.str.contains('|'.join(cols))]
     continuous = df.columns[~df.columns.isin(discrete)]
     return continuous, discrete
@@ -37,8 +36,7 @@ def group_features(continuous, discrete):
     raw = select_feature(continuous, '', config['year'], period=True)
     vol = select_feature(continuous, 'volatility', 'all', period=False)
     fur = select_feature(continuous, 'fur_', config['year'], period=False)
-    msc = select_feature(discrete, 'MScore',
-                         config['year'], period=False)+['volatility_MScore']
+    msc = select_feature(discrete, 'MScore', config['year'], period=False)+['volatility_MScore']
     all = grow + raw + vol + fur + msc
     feature_groups = {
         'grow': grow,

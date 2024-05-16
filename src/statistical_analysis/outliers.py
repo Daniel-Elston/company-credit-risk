@@ -68,8 +68,7 @@ class HandleOutliers:
         self.logger.debug(
             'Running HandleOutliers pipeline. Data shape: %s', df.shape)
 
-        df = self.replace_outliers(
-            df, continuous, method='lof', contamination=0.5)
+        df = self.replace_outliers(df, continuous, method='lof', contamination=0.5)
         self.logger.debug(
             'HandleOutliers pipeline complete. Data shape after lof: %s', df.shape)
 
@@ -77,8 +76,7 @@ class HandleOutliers:
         self.logger.debug(
             'HandleOutliers pipeline complete. Data shape after iqr: %s', df.shape)
 
-        df = self.replace_outliers(
-            df, continuous, method='zscore', threshold=12.0)
+        df = self.replace_outliers(df, continuous, method='zscore', threshold=12.0)
         self.logger.debug(
             'HandleOutliers pipeline complete. Data shape after zscore: %s', df.shape)
 

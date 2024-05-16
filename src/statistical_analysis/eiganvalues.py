@@ -20,8 +20,7 @@ class AnalyseEigenValues:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def load_corr_store(self, run_number):
-        filepath = Path(
-            f'{config['path']['correlation']}/exploration_{run_number}.csv')
+        filepath = Path(f'{config['path']['correlation']}/exploration_{run_number}.csv')
         data = pd.read_csv(filepath, index_col=0)
         return data
 
@@ -30,8 +29,7 @@ class AnalyseEigenValues:
         store = {
             'eigen_values': corr_eig.tolist()
         }
-        filepath = Path(
-            f'{config["path"]["eigen"]}/eigen_values_{run_number}.json')
+        filepath = Path(f'{config["path"]["eigen"]}/eigen_values_{run_number}.json')
         save_json(store, filepath)
         return corr_eig
 

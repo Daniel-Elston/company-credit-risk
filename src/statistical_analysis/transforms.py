@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import numpy as np
 from scipy.stats import skew
@@ -93,8 +94,7 @@ class ApplyTransforms:
     def pipeline(self, df, trans_map, shape_threshold):
         self.logger.info(
             'Applying Distribution Transformations.')
-        optimal_transforms = load_json(
-            f'{config['path']['skew']}/transform_map.json')
+        optimal_transforms = load_json(Path(f'{config['path']['skew']}/transform_map.json'))
         cols = self.cols_to_transform(optimal_transforms, shape_threshold)
 
         df_transform = df[cols].copy()

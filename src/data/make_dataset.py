@@ -51,8 +51,7 @@ class LoadData:
                     first_batch = False
 
                 # Convert chunk (list of tuples) to PyArrow RecordBatch
-                arrays = [pa.array([row[idx] for row in chunk])
-                          for idx in range(len(column_names))]
+                arrays = [pa.array([row[idx] for row in chunk])for idx in range(len(column_names))]
                 batch = pa.RecordBatch.from_arrays(arrays, schema=schema)
                 batches.append(batch)
 

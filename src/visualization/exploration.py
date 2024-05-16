@@ -51,8 +51,7 @@ class Visualiser:
         plt.title(f'{metric} Trends Over Years')
         plt.xlabel('Year')
         plt.ylabel(f'{metric}')
-        plt.savefig(
-            Path(f'{config['path']['exploration']}/{metric}_trends.png'))
+        plt.savefig(Path(f'{config['path']['exploration']}/{metric}_trends.png'))
 
     def exploration_filing(self, run_number):
         dir_path = f'{config['path']['exploration']}/exploration_{run_number}'
@@ -66,21 +65,17 @@ class Visualiser:
         self.logger.info(
             f'Running Visualiser Pipeline. Run Number {run_number}...')
 
-        dist_store, dist_names = list(groups.values())[
-            :-2], list(groups.keys())[:-2]
-        # corr_store, corr_names = list(groups.values())[
-        #     :-1], list(groups.keys())[:-1]
+        dist_store, dist_names = list(groups.values())[:-2], list(groups.keys())[:-2]
+        # corr_store, corr_names = list(groups.values())[:-1], list(groups.keys())[:-1]
 
         for i, j in zip(dist_store, dist_names):
-            self.generate_pair_plot(df, i, f'exploration_{
-                                    run_number}/pair_plot_{j}')
+            self.generate_pair_plot(df, i, f'exploration_{run_number}/pair_plot_{j}')
 
         # for i, j in zip(corr_store, corr_names):
         #     self.generate_heat_plot(df, i, f'exploration_{run_number}/corr_map_{j}')
 
         corr_mat = self.generate_heat_plot(df, groups['all'], f'exploration_{run_number}/corr_map_all')
-        corr_mat.to_csv(
-            Path(f'{config['path']['correlation']}/exploration_{run_number}.csv'))
+        corr_mat.to_csv(Path(f'{config['path']['correlation']}/exploration_{run_number}.csv'))
 
         self.logger.info(
             f'Visualiser Pipeline Completed. Figures saved to: ``{config['path']['exploration']}/exploration_{run_number}/*.png``')

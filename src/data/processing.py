@@ -50,8 +50,7 @@ class InitialProcessor:
             "_" + df['Sector 1']
         df[['Combined_Sector']] = df[['Combined_Sector']].apply(
             label_encoder.fit_transform)
-        sector_map = {category: idx for idx,
-                      category in enumerate(label_encoder.classes_)}
+        sector_map = {category: idx for idx, category in enumerate(label_encoder.classes_)}
 
         filepath = Path(f'{config['path']['sector_map']}/sector_map.json')
         if os.path.isfile(filepath):
