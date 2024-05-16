@@ -1,7 +1,19 @@
-Eigenvalues:
-- Eigenvalue analysis included for future PCA decision making
+Handlling Outliers:
+- Added more methods for handling outliers
+- Easy to switch between algoirhms and args to experiment with different methods of outlier removal
 
-eigenvalues.py:
-	- AnalyseEigenValues class created
-	- Generates eigenvalues.json
-	- Generates and plots scree plots
+skew_kurtosis.py:
+	- Changed class names from EvalSkew -> EvalDist
+	- Included kurtosis metric saving in transform_mapping.json
+	- Added adjustable weights to skew and kurtosis measures
+
+transforms.py:
+	- Added yeo-johnson PowerTransform method
+	- Removed CoxBox methods
+	- Added method to return high value skew/kurtosis features post transform
+	- Apply transform now only applies to features above threshold value
+	- Threshold value is abs(mean(skew+kurt))
+
+config_ops.py:
+	- Experimenting with feature retrieval
+	- Added robust feature retrieval get_feature_columns method

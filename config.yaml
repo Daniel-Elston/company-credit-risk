@@ -56,13 +56,13 @@ raw_features:
   - TAsset.
 
 growth_features:
-  - growth_TAsset.
-  - growth_EBIT.
+  - growth_TAsset
+  - growth_EBIT
   # - growth_MScore.
-  - growth_PLTax.
-  - growth_Turnover.
-  - growth_Leverage.
-  - growth_ROE.
+  - growth_PLTax
+  - growth_Turnover
+  - growth_Leverage
+  - growth_ROE
 
 volatility_features:
   - volatility_TAsset
@@ -81,8 +81,7 @@ further_features:
 
 trans_idx:
   - log
-  - cox1p
-  - cox
   - sqrt
   - inv_sqrt
   - inv
+  - power

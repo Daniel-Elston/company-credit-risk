@@ -12,7 +12,7 @@ from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
 
 
-class GenerateSkewAnalysis:
+class GenerateDistAnalysis:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -53,7 +53,7 @@ class GenerateSkewAnalysis:
             f'Skew Generation and Analysis Pipeline Completed. Data saved to: ``{config['path']['skew']}/*.json``')
 
 
-class EvaluateSkewAnalysis:
+class EvaluateDistAnalysis:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -72,35 +72,39 @@ class EvaluateSkewAnalysis:
             for record in records:
                 column = record['Column']
                 skew_value = record['Transformed Skew']
+                kurtosis_value = record['Transformed Kurtosis']
                 if column not in column_transforms:
                     column_transforms[column] = {}
-                column_transforms[column][transform] = skew_value
+                column_transforms[column][transform] = (
+                    skew_value, kurtosis_value)
         return column_transforms
 
-    def get_optimal_transform(self, column_transforms):
-        """Retrieve the transform with the lowest absolute skew for each column"""
+    def get_optimal_transform(self, column_transforms, skew_weight, kurt_weight):
+        """Retrieve the transform with the lowest combined metric for each column"""
         optimal_transforms = {}
         for column, transforms in column_transforms.items():
-            min_skew = float('inf')
+            min_metric = float('inf')
             optimal_transform = None
-            for transform, skew_value in transforms.items():
-                if abs(skew_value) < min_skew:
-                    min_skew = abs(skew_value)
+            for transform, (skew_value, kurtosis_value) in transforms.items():
+                combined_metric = abs(skew_value)*skew_weight + \
+                    abs(kurtosis_value)*kurt_weight
+                if combined_metric < min_metric:
+                    min_metric = combined_metric
                     optimal_transform = transform
             optimal_transforms[column] = (
                 optimal_transform, transforms[optimal_transform])
 
-            filepath = Path(f'{config['path']['skew']}/transform_map.json')
-            save_json(optimal_transforms, filepath)
+        filepath = Path(f'{config["path"]["skew"]}/transform_map.json')
+        save_json(optimal_transforms, filepath)
         return optimal_transforms
 
-    def pipeline(self):
+    def pipeline(self, skew_weight, kurt_weight):
         self.logger.info(
             f'Running Skew Evaluation and Analysis Pipeline. Analysing files: ``{config['path']['skew']}/*.json`')
 
         results = self.load_results()
         compiled_data = self.compile_transform_data(results)
-        self.get_optimal_transform(compiled_data)
+        self.get_optimal_transform(compiled_data, skew_weight, kurt_weight)
 
         self.logger.info(
             f'Skew Evaluation and Analysis Pipeline Completed. Results saved to: ``{config['path']['maps']}/transform_map.json``')

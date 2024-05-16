@@ -89,8 +89,8 @@ class LoadData:
         date_cols = sorted(date_cols, reverse=True)
         return metric_cols, date_cols
 
-    def pipeline(self):
-        self.table_to_parquet(config['export_tables'])
+    def pipeline(self, table_names: list):
+        self.table_to_parquet(table_names)
         table = self.create_pa_table()
         df = self.create_pd_df(table)
         metric_cols, date_cols = self.get_columns(df)

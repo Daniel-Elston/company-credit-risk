@@ -24,12 +24,12 @@ class BuildFeatures:
                 current_metric = f'{metric}.{current_year}'
                 previous_metric = f'{metric}.{previous_year}'
 
-                df[f'growth_{metric}.{current_year}'] = (
+                df[f'growth_{metric}{current_year}'] = (
                     df[current_metric] - df[previous_metric]) / (df[previous_metric]).replace(0, np.nan)
 
-                mean = df[f'growth_{metric}.{current_year}'].mean()
-                df[f'growth_{metric}.{current_year}'] = df[f'growth_{
-                    metric}.{current_year}'].fillna(mean)
+                mean = df[f'growth_{metric}{current_year}'].mean()
+                df[f'growth_{metric}{current_year}'] = df[f'growth_{
+                    metric}{current_year}'].fillna(mean)
         return df
 
     def build_volatility(self, df, metric_cols, date_cols):

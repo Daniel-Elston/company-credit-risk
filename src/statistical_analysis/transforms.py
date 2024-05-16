@@ -3,9 +3,8 @@ from __future__ import annotations
 import logging
 
 import numpy as np
-from scipy.special import boxcox1p
-from scipy.stats import boxcox
 from scipy.stats import skew
+from sklearn.preprocessing import PowerTransformer
 
 from utils.file_handler import load_json
 from utils.setup_env import setup_project_env
@@ -18,20 +17,6 @@ class StoreTransforms:
 
     def apply_log(self, df, cols):
         df[cols] = df[cols].clip(lower=0).apply(np.log1p)
-        return df
-
-    def apply_box_cox_1p(self, df, col):
-        shift = df[col].min()
-        if shift <= 0:
-            df[col] += (1 - shift)
-        df[col] = boxcox1p(df[col], 0)
-        return df
-
-    def apply_box_cox(self, df, col):
-        shift = df[col].min()
-        if shift <= 0:
-            df[col] += (1 - shift)
-        df[col], _ = boxcox(df[col])
         return df
 
     def apply_sqrt(self, df, cols):
@@ -48,20 +33,25 @@ class StoreTransforms:
         df[cols] = 1 / (df[cols] + eps)
         return df
 
+    def apply_power(self, df, cols, method='yeo-johnson'):
+        pt = PowerTransformer(method=method)
+        df[cols] = pt.fit_transform(df[[cols]])
+        return df
+
     def get_transform_lists(self):
         trans_funcs = [
-            self.apply_log, self.apply_box_cox_1p, self.apply_box_cox,
-            self.apply_sqrt, self.apply_inv_sqrt, self.apply_inv]
+            self.apply_log, self.apply_sqrt,
+            self.apply_inv_sqrt, self.apply_inv,
+            self.apply_power]
         return trans_funcs
 
     def get_transform_map(self):
         trans_map = {
             'log': self.apply_log,
-            'cox1p': self.apply_box_cox_1p,
-            'cox': self.apply_box_cox,
             'sqrt': self.apply_sqrt,
             'inv_sqrt': self.apply_inv_sqrt,
-            'inv': self.apply_inv
+            'inv': self.apply_inv,
+            'power': self.apply_power
         }
         return trans_map
 
@@ -78,30 +68,50 @@ class ApplyTransforms:
     def calc_skew(self, df):
         return round((skew(df)).mean(), 2)
 
+    def calc_kurtosis(self, df):
+        return round((df.kurtosis()).mean(), 2)
+
+    def cols_to_transform(self, optimal_transforms, shape_threshold=0.1):
+        """Get columns that fall below Skew/Kurt threshold"""
+        high_vals = {
+            col: np.mean([abs(skew), abs(kurt)])
+            for col, (transform, [skew, kurt]) in optimal_transforms.items()
+            if np.mean([abs(skew), abs(kurt)]) > shape_threshold}
+        return list(high_vals.keys())
+
     def apply_transforms(self, df_transform, optimal_transforms, trans_map):
-        for col, (transform, _) in optimal_transforms.items():
+        """Apply the optimal transform to each column in the dataframe"""
+        for col in df_transform.columns:
+            transform, _ = optimal_transforms[col]
             if transform in trans_map:
                 df_transform = trans_map[transform](df_transform, col)
             else:
                 self.logger.error('Transform not found: %s', transform)
-                raise ValueError
+                raise ValueError(f'Transform not found: {transform}')
         return df_transform
 
-    def pipeline(self, df, cols, trans_map):
+    def pipeline(self, df, trans_map, shape_threshold):
         self.logger.info(
             'Applying Distribution Transformations.')
         optimal_transforms = load_json(
             f'{config['path']['skew']}/transform_map.json')
+        cols = self.cols_to_transform(optimal_transforms, shape_threshold)
 
-        df_transform = df[cols]
+        df_transform = df[cols].copy()
         pre_transform_skew = self.calc_skew(df_transform)
+        pre_transform_kurtosis = self.calc_kurtosis(df_transform)
 
         df_transform = self.apply_transforms(
             df_transform, optimal_transforms, trans_map)
 
         post_transform_skew = self.calc_skew(df_transform)
+        post_transform_kurtosis = self.calc_kurtosis(df_transform)
         df[cols] = df_transform[cols]
 
         self.logger.info(
-            'Transforms applied. Pre-transform skew: %s. Post-transform skew: %s', pre_transform_skew, post_transform_skew)
+            'Transforms applied. Pre-transform skew: %s. Post-transform skew: %s',
+            pre_transform_skew, post_transform_skew)
+        self.logger.info(
+            'Transforms applied. Pre-transform kurtosis: %s. Post-transform kurtosis: %s',
+            pre_transform_kurtosis, post_transform_kurtosis)
         return df
