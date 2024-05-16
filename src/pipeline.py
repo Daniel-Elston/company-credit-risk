@@ -7,7 +7,6 @@ from src.data.make_dataset import LoadData
 from src.data.processing import InitialProcessor
 from src.data.quality_assessment import QualityAssessment
 from src.features.build_features import BuildFeatures
-from src.statistical_analysis.analysis_utils import Sampling
 from src.statistical_analysis.correlations import EvaluateCorrAnalysis
 from src.statistical_analysis.correlations import GenerateCorrAnalysis
 from src.statistical_analysis.eiganvalues import AnalyseEigenValues
@@ -17,10 +16,11 @@ from src.statistical_analysis.skew_kurtosis import GenerateDistAnalysis
 from src.statistical_analysis.transforms import ApplyTransforms
 from src.statistical_analysis.transforms import StoreTransforms
 from src.visualization.exploration import Visualiser
-from utils.config_ops import continuous_discrete
+from utils.my_utils import continuous_discrete
+from utils.my_utils import group_features
+from utils.my_utils import stratified_random_sample
 from utils.setup_env import setup_project_env
 # import pandas as pd
-# from utils.config_ops import get_feature_columns
 # from src.data.processing import FurtherProcessor
 # from utils.file_handler import load_json
 # from utils.file_handler import save_json
@@ -32,9 +32,9 @@ class DataPipeline:
         self.logger = logging.getLogger(self.__class__.__name__)
         # self.df = pd.read_parquet(Path('data/interim/df_outliers_rem.parquet'))
         # self.cont, self.disc = continuous_discrete(config, self.df)
+        # self.groups = group_features(self.cont, self.disc)
         self.trans_map, self.trans_funcs = StoreTransforms().get_transform_info()
 
-    # @staticmethod
     def run_make_dataset(self):
         """Loads PGSQL tables -> .parquet -> pd.DataFrame"""
         load = LoadData()
@@ -56,16 +56,17 @@ class DataPipeline:
         build = BuildFeatures()
         self.df = build.pipeline(self.df, self.metric_cols, self.date_cols)
         self.cont, self.disc = continuous_discrete(config, self.df)
+        self.groups = group_features(self.cont, self.disc)
 
     def run_handle_outliers(self):
         """Removes Outliers"""
         outliers = HandleOutliers()
-        self.df = outliers.pipeline(self.df)
+        self.df = outliers.pipeline(self.df, self.cont, self.disc)
 
     def run_exploration(self, run_number):
         """Visualise Stratified Data"""
-        df_stratified = Sampling().stratified_random_sample(self.df)
-        Visualiser().pipeline(df_stratified, self.cont, run_number)
+        df_stratified = stratified_random_sample(self.df)
+        Visualiser().pipeline(df_stratified, self.groups, run_number)
         GenerateCorrAnalysis().pipeline(run_number)
 
     def run_distribution_analysis(self, skew_weight=1, kurt_weight=1):
@@ -104,11 +105,6 @@ class DataPipeline:
         self.apply_transforms()
         self.run_exploration(run_number='3')
         self.run_correlation_analysis()
-
-        # grow = get_feature_columns(self.cont, 'growth_', '2018', period=False)
-        # raw = get_feature_columns(self.cont, '', '2018', period=True)
-        # vol = get_feature_columns(self.cont, 'volatility', 'all', period=False)
-        # further = get_feature_columns(self.cont, 'further', 'all', period=False)
 
 
 if __name__ == '__main__':

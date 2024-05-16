@@ -9,7 +9,6 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
-from utils.config_ops import amend_features
 from utils.file_handler import save_json
 from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
@@ -115,14 +114,15 @@ class FurtherProcessor:
         df[scale_cols] = scaler.fit_transform(df[scale_cols])
         return df
 
-    def pipeline(self, df):
+    def pipeline(self, df, groups):
         self.logger.debug(
             'Running FurtherProcessor pipeline. Data shape: %s', df.shape)
 
-        _, grow, *_ = amend_features(config)
+        # _, grow, *_ = amend_features(config)
+        # groups['grow']
 
         self.replace_outliers(df, "winsorize", (0.05, 0.95))
-        self.replace_outliers(df[grow], 'zscore', (0.05, 0.95))
+        self.replace_outliers(df[groups['grow']], 'zscore', (0.05, 0.95))
 
         self.logger.debug(
             'FurtherProcessor pipeline complete. Data shape: %s', df.shape)

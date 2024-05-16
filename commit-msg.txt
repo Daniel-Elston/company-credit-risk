@@ -1,19 +1,15 @@
-Handlling Outliers:
-- Added more methods for handling outliers
-- Easy to switch between algoirhms and args to experiment with different methods of outlier removal
+Feature Retrieval:
+- Dynamic approach to retrieving feature groupings
+- File name change: config_ops.py -> my_utils.py
 
-skew_kurtosis.py:
-	- Changed class names from EvalSkew -> EvalDist
-	- Included kurtosis metric saving in transform_mapping.json
-	- Added adjustable weights to skew and kurtosis measures
+outliers.py:
+	- Removal of method get_cols
 
-transforms.py:
-	- Added yeo-johnson PowerTransform method
-	- Removed CoxBox methods
-	- Added method to return high value skew/kurtosis features post transform
-	- Apply transform now only applies to features above threshold value
-	- Threshold value is abs(mean(skew+kurt))
+exploration.py:
+	- Removal of amend_cols_list, in place of my_utils method group_features
 
-config_ops.py:
-	- Experimenting with feature retrieval
-	- Added robust feature retrieval get_feature_columns method
+my_utils:
+	- Removal of amend_features, features_all_years and amend_cols_list
+	- Replaced with group_features
+	- Renamed get_feature_cols to select_featrue (and general cleaning of function)
+	- Added stratified_random_sample

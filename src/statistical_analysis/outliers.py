@@ -8,9 +8,7 @@ from sklearn.cluster import DBSCAN
 from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
 
-from utils.config_ops import continuous_discrete
 from utils.setup_env import setup_project_env
-# from utils.config_ops import get_feature_columns
 project_dir, config, setup_logs = setup_project_env()
 
 
@@ -66,37 +64,9 @@ class HandleOutliers:
         else:
             raise ValueError("Unsupported outlier detection method.")
 
-    # def get_cols(self, df):
-    #     continuous, discrete = continuous_discrete(config, df)
-    #     growth_cols = get_feature_columns(continuous, 'growth_', False)
-    #     cont_no_growth = [col for col in continuous if col not in growth_cols]
-
-    #     # volatility = get_feature_columns(continuous, 'volatility', False)
-
-    #     growth_ebits = get_feature_columns(continuous, 'growth_EBIT', False)
-    #     growth_pltax = get_feature_columns(continuous, 'growth_PLTax', False)
-    #     growth_roe = get_feature_columns(continuous, 'growth_ROE', False)
-    #     ebits = get_feature_columns(continuous, 'EBIT.', True)
-    #     pltax = get_feature_columns(continuous, 'PLTax.', True)
-    #     leverage = get_feature_columns(continuous, 'Leverage.', True)
-    #     long_tails = growth_ebits + growth_pltax + growth_roe + ebits + pltax + leverage
-
-    #     debt_to_eq = get_feature_columns(continuous, 'debt_to_eq', False)
-    #     op_marg = get_feature_columns(continuous, 'op_marg', False)
-    #     roa = get_feature_columns(continuous, 'roa', False)
-    #     growth_cols = get_feature_columns(continuous, 'growth_', False)
-    #     ebits = get_feature_columns(continuous, 'EBIT.', True)
-    #     cols = debt_to_eq + op_marg + roa + growth_cols + ebits
-
-    #     return continuous, cont_no_growth, growth_cols, long_tails, cols
-
-    def pipeline(self, df):
+    def pipeline(self, df, continuous, discrete):
         self.logger.debug(
             'Running HandleOutliers pipeline. Data shape: %s', df.shape)
-
-        # continuous, cont_no_growth, growth_cols, long_tails, cols = self.get_cols(
-        #     df)
-        continuous, discrete = continuous_discrete(config, df)
 
         df = self.replace_outliers(
             df, continuous, method='lof', contamination=0.5)
@@ -106,10 +76,6 @@ class HandleOutliers:
         df = self.replace_outliers(df, continuous, method='iqr', factor=6.0)
         self.logger.debug(
             'HandleOutliers pipeline complete. Data shape after iqr: %s', df.shape)
-
-        # df = self.replace_outliers(df, long_tails, method='iqr', factor=4.0)
-        # self.logger.debug(
-        #     'HandleOutliers pipeline complete. Data shape after SECOND iqr: %s', df.shape)
 
         df = self.replace_outliers(
             df, continuous, method='zscore', threshold=12.0)
