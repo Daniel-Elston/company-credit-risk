@@ -7,7 +7,7 @@ year: '2020'
 
 # LOGGING
 logging:
-  root_level: INFO
+  root_level: DEBUG
   file_level: DEBUG
   console_level: DEBUG
 

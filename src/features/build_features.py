@@ -59,13 +59,22 @@ class BuildFeatures:
         return df
 
     def pipeline(self, df):
+        self.logger.info(
+            'Running Feature Building pipeline.')
+        initial_shape = df.shape
+
         metric_cols = ['MScore', 'TAsset', 'Leverage', 'EBIT', 'Turnover', 'ROE', 'PLTax']
         date_cols = ['2020', '2019', '2018', '2017', '2016', '2015']
-        self.logger.info(
-            'Running BuildFeatures pipeline. Dataframe shape: %s', df.shape)
+
         df = self.build_growth(df, metric_cols, date_cols)
         df = self.build_volatility(df, metric_cols, date_cols)
         df = self.build_metrics(df, date_cols)
+
+        processed_shape = df.shape
+        shape_diff = (processed_shape[0] - initial_shape[0], processed_shape[1] - initial_shape[1])
+        self.logger.debug(
+            'Initial Shape: %s, Processed Shape: %s, Shape Difference: %s (Rows Removed: %s, Columns Changed: %s)',
+            initial_shape, processed_shape, shape_diff, shape_diff[0], shape_diff[1])
         self.logger.info(
-            'BuildFeatures pipeline complete. New dataframe shape: %s', df.shape)
+            'Feature Building pipeline complete.')
         return df

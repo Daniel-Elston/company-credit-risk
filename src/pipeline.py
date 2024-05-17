@@ -22,8 +22,7 @@ from src.statistical_analysis.skew_kurtosis import GenerateDistAnalysis
 from src.statistical_analysis.transforms import ApplyTransforms
 from src.statistical_analysis.transforms import StoreTransforms
 from src.visualization.exploration import Visualiser
-from utils.my_utils import continuous_discrete
-from utils.my_utils import group_features
+from utils.my_utils import grouped_features
 from utils.my_utils import stratified_random_sample
 from utils.setup_env import setup_project_env
 # from src.data.processing import FurtherProcessor
@@ -35,22 +34,27 @@ project_dir, config, setup_logs = setup_project_env()
 @dataclass
 class DataState:
     df: pd.DataFrame = None
-    cont: list = field(default_factory=list)
-    disc: list = field(default_factory=list)
-    groups: dict = field(default_factory=dict)
     trans: StoreTransforms = field(default_factory=StoreTransforms)
+    logger: logging.Logger = field(default_factory=lambda: logging.getLogger(__name__))
     trans_map: dict = field(init=False)
+    cont: list = field(init=False, default_factory=list)
+    disc: list = field(init=False, default_factory=list)
+    groups: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         self.trans_map = self.trans.get_transform_map()
-        self.logger = logging.getLogger(__name__)
         post_init_dict = {
             'df': self.df,
-            'cont': self.cont,
-            'disc': self.disc,
-            'groups': self.groups
+            'logger': self.logger
         }
         self.logger.debug(f"Initialized DataState: {pformat(post_init_dict)}")
+
+    def update_grouped_features(self):
+        """Update continuous, discrete, and grouped features."""
+        grouped = grouped_features(config, self.df)
+        self.cont = grouped['cont']
+        self.disc = grouped['disc']
+        self.groups = grouped['groups']
 
     def print_state(self):
         for field_info in fields(self):
@@ -69,7 +73,7 @@ class DataPipeline:
         self.ds = DataState()
         self.ss = StatisticState()
         self.logger = logging.getLogger(self.ds.__class__.__name__)
-        # self.ds.df = pd.read_parquet('data/interim/df_out.parquet')
+        self.ds.df = pd.read_parquet('data/interim/df_test.parquet')
 
     def run_make_dataset(self):
         """Loads PGSQL tables -> .parquet -> pd.DataFrame"""
@@ -90,10 +94,6 @@ class DataPipeline:
         """Builds features"""
         build = BuildFeatures()
         self.ds.df = build.pipeline(self.ds.df)
-
-    def group_features(self):
-        self.ds.cont, self.ds.disc = continuous_discrete(config, self.ds.df)
-        self.ds.groups = group_features(self.ds.cont, self.ds.disc)
 
     def run_handle_outliers(self):
         """Removes Outliers"""
@@ -123,16 +123,14 @@ class DataPipeline:
 
     def main(self):
         try:
-            # self.ds.print_state()
             self.run_make_dataset()
-            # self.run_quality_assessment()
-            # self.run_initial_processing()
-            # self.run_feature_engineering()
-            # self.group_features()
+            self.run_quality_assessment()
+            self.run_initial_processing()
+            self.run_feature_engineering()
+            self.ds.update_grouped_features()
             # self.run_exploration(run_number='0')
 
             # self.run_handle_outliers()
-            # # self.ds.df.to_parquet('data/interim/df_out.parquet')
             # self.run_exploration(run_number='1')
 
             # self.run_distribution_analysis()

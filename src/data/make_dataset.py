@@ -63,7 +63,6 @@ class LoadData:
 
     def create_pd_df(self, table):
         df = table.to_pandas()
-        self.logger.debug('Dataframe shape: %s', df.shape)
         return df
 
     def create_pq_file(self):
@@ -81,6 +80,9 @@ class LoadData:
         self.table_to_parquet(table_names)
         table = self.create_pa_table()
         df = self.create_pd_df(table)
+
+        self.logger.debug(
+            'Raw DataFrame shape: %s', df.shape)
 
         self.logger.info(
             'Data export Complete. PA Table Saved to: ``data/sdo/*.parquet``')

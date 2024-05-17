@@ -28,8 +28,7 @@ def select_feature(cont_cols, feature_name, dates, period):
 
     if dates == 'all':
         return feature_cols
-    filtered = [col for col in feature_cols if dates in col]
-    return filtered
+    return [col for col in feature_cols if dates in col]
 
 
 def group_features(continuous, discrete):
@@ -39,7 +38,7 @@ def group_features(continuous, discrete):
     fur = select_feature(continuous, 'fur_', config['year'], period=False)
     msc = select_feature(discrete, 'MScore', config['year'], period=False)+['volatility_MScore']
     all = grow + raw + vol + fur + msc
-    feature_groups = {
+    return {
         'grow': grow,
         'raw': raw,
         'vol': vol,
@@ -47,4 +46,14 @@ def group_features(continuous, discrete):
         'msc': msc,
         'all': all
     }
-    return feature_groups
+
+
+def grouped_features(config, df):
+    """Get discrete/continuous columns and group features."""
+    cont, disc = continuous_discrete(config, df)
+    groups = group_features(cont, disc)
+    return {
+        'cont': cont,
+        'disc': disc,
+        'groups': groups
+    }
