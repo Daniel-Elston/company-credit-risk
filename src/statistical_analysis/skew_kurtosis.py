@@ -42,15 +42,15 @@ class GenerateDistAnalysis:
         filepath = Path(f'{config['path']['skew']}/{file_idx}.json')
         save_json(skew_store, filepath)
 
-    def pipeline(self, df, cols, transform_funcs):
+    def pipeline(self, df, cols, trans_map):
         self.logger.info(
-            'Running Skew Generation and Analysis Pipeline.')
+            'Generating Distribution Analysis Pipeline.')
 
-        for transform, idx in zip(transform_funcs, config['trans_idx']):
-            self.analyze_skew_and_kurtosis(df, cols, transform, idx)
+        for transform_name, transform_func in trans_map.items():
+            self.analyze_skew_and_kurtosis(df, cols, transform_func, transform_name)
 
         self.logger.info(
-            f'Skew Generation and Analysis Pipeline Completed. Data saved to: ``{config['path']['skew']}/*.json``')
+            f'Distribution Analysis Generation Completed. Data saved to: ``{config['path']['skew']}/*.json``')
 
 
 class EvaluateDistAnalysis:
@@ -100,11 +100,11 @@ class EvaluateDistAnalysis:
 
     def pipeline(self, skew_weight, kurt_weight):
         self.logger.info(
-            f'Running Skew Evaluation and Analysis Pipeline. Analysing files: ``{config['path']['skew']}/*.json`')
+            f'Running Evaluation of Distribution Analysis. Analysing files: ``{config['path']['skew']}/*.json`')
 
         results = self.load_results()
         compiled_data = self.compile_transform_data(results)
         self.get_optimal_transform(compiled_data, skew_weight, kurt_weight)
 
         self.logger.info(
-            f'Skew Evaluation and Analysis Pipeline Completed. Results saved to: ``{config['path']['maps']}/transform_map.json``')
+            f'Distribution Analysis Evaluation Completed. Results saved to: ``{config['path']['maps']}/transform_map.json``')

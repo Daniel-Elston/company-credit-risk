@@ -71,25 +71,25 @@ class HandleOutliers:
             raise ValueError("Unsupported outlier detection method.")
 
     def pipeline(self, df, continuous, discrete):
-        self.logger.debug(
+        self.logger.info(
             'Running HandleOutliers pipeline. Data shape: %s', df.shape)
 
         df = self.replace_outliers(df, continuous, method='lof')
         self.logger.debug(
-            'HandleOutliers pipeline complete. Data shape after lof: %s', df.shape)
+            'Data shape after lof: %s', df.shape)
 
         df = self.replace_outliers(df, continuous, method='iqr')
         self.logger.debug(
-            'HandleOutliers pipeline complete. Data shape after iqr: %s', df.shape)
+            'Data shape after iqr: %s', df.shape)
 
         df = self.replace_outliers(df, continuous, method='zscore')
         self.logger.debug(
-            'HandleOutliers pipeline complete. Data shape after zscore: %s', df.shape)
+            'Data shape after zscore: %s', df.shape)
 
         # df = self.replace_outliers(df, long_tails, method='zscore', threshold=4.0)
         # self.logger.debug('HandleOutliers pipeline complete. Data shape after SECOND zscore: %s', df.shape)
 
-        self.logger.debug(
+        self.logger.info(
             'HandleOutliers pipeline complete. Data shape: %s', df.shape)
 
         return df

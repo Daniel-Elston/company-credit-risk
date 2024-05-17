@@ -11,7 +11,7 @@ from utils.logging_config import setup_logging
 def setup_project_env(
         config_filename='config.yaml', env_filename='.env'):
     """Set up the project environment and load configuration."""
-    
+
     # Set up the environment
     project_dir = Path(__file__).resolve().parents[1]
     dotenv_path = project_dir / env_filename

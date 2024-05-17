@@ -61,11 +61,11 @@ class BuildFeatures:
     def pipeline(self, df):
         metric_cols = ['MScore', 'TAsset', 'Leverage', 'EBIT', 'Turnover', 'ROE', 'PLTax']
         date_cols = ['2020', '2019', '2018', '2017', '2016', '2015']
-        self.logger.debug(
+        self.logger.info(
             'Running BuildFeatures pipeline. Dataframe shape: %s', df.shape)
         df = self.build_growth(df, metric_cols, date_cols)
         df = self.build_volatility(df, metric_cols, date_cols)
         df = self.build_metrics(df, date_cols)
-        self.logger.debug(
+        self.logger.info(
             'BuildFeatures pipeline complete. New dataframe shape: %s', df.shape)
         return df

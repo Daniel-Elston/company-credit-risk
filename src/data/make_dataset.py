@@ -11,9 +11,6 @@ import sqlalchemy
 
 from database.db_ops import DataBaseOps
 from utils.setup_env import setup_project_env
-# import time
-# import pandas as pd
-# import psycopg2.pool
 project_dir, config, setup_logs = setup_project_env()
 creds, pg_pool, engine, conn = DataBaseOps().ops_pipeline()
 
@@ -27,9 +24,6 @@ class LoadData:
 
     def table_to_parquet(self, export_tables):
         """Stream a database table directly to a Parquet file using PyArrow"""
-        self.logger.debug(
-            'Beginning data export: PGSQL Table -> .parquet')
-
         for table in export_tables:
             result = engine.connect().execution_options(stream_results=True).execute(
                 sqlalchemy.text(f"SELECT * FROM {table}"))
@@ -60,8 +54,6 @@ class LoadData:
             file_path = f'data/sdo/{table}.parquet'
             pq.write_table(arrow_table, file_path)
 
-        self.logger.debug('Export complete')
-
     def create_pa_table(self):
         dataset_path = 'data/sdo/'
         dataset = ds.dataset(dataset_path, format='parquet')
@@ -83,16 +75,13 @@ class LoadData:
             pq.write_table(table, filepath)
 
     def pipeline(self, table_names: list):
+        self.logger.info(
+            'Beginning data export: PGSQL Table -> .parquet')
+
         self.table_to_parquet(table_names)
         table = self.create_pa_table()
         df = self.create_pd_df(table)
+
+        self.logger.info(
+            'Data export Complete. PA Table Saved to: ``data/sdo/*.parquet``')
         return table, df
-
-    # def main(self):
-    #     export_tables = config['export_tables']
-    #     t1 = time.time()
-    #     self.table_to_parquet(export_tables)
-    #     t2 = time.time()
-
-    #     timed_sheet = round((t2-t1)/len(export_tables), 4)
-    #     timed_total = round((t2-t1), 4)

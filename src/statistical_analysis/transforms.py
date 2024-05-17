@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 
 import numpy as np
@@ -12,54 +14,46 @@ from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
 
 
+@dataclass
 class StoreTransforms:
-    def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+    logger: logging.Logger = field(default_factory=lambda: logging.getLogger(__name__))
+    trans_map: dict = field(init=False)
 
-    def apply_log(self, df, cols):
+    def __post_init__(self):
+        self.trans_map = self.get_transform_map()
+        self.logger.info("Transforms initialized from file: ``src/statistical_analysis/transforms.py``.")
+
+    def apply_log(self, df, cols: list):
         df[cols] = df[cols].clip(lower=0).apply(np.log1p)
         return df
 
-    def apply_sqrt(self, df, cols):
+    def apply_sqrt(self, df, cols: list):
         df[cols] = np.sqrt(df[cols].clip(lower=0))
         return df
 
-    def apply_inv_sqrt(self, df, cols):
+    def apply_inv_sqrt(self, df, cols: list):
         eps = 1e-8
         df[cols] = 1 / np.sqrt(df[cols] + eps)
         return df
 
-    def apply_inv(self, df, cols):
+    def apply_inv(self, df, cols: list):
         eps = 1e-8
         df[cols] = 1 / (df[cols] + eps)
         return df
 
-    def apply_power(self, df, cols, method='yeo-johnson'):
+    def apply_power(self, df, cols: list, method: str = 'yeo-johnson'):
         pt = PowerTransformer(method=method)
         df[cols] = pt.fit_transform(df[[cols]])
         return df
 
-    def get_transform_lists(self):
-        trans_funcs = [
-            self.apply_log, self.apply_sqrt,
-            self.apply_inv_sqrt, self.apply_inv,
-            self.apply_power]
-        return trans_funcs
-
     def get_transform_map(self):
-        trans_map = {
+        return {
             'log': self.apply_log,
             'sqrt': self.apply_sqrt,
             'inv_sqrt': self.apply_inv_sqrt,
             'inv': self.apply_inv,
             'power': self.apply_power
         }
-        return trans_map
-
-    def get_transform_info(self):
-        trans_map = self.get_transform_map()
-        trans_funcs = self.get_transform_lists()
-        return trans_map, trans_funcs
 
 
 class ApplyTransforms:
