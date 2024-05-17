@@ -1,2 +1,4 @@
 DataClass:
-- Added pipeline.py dataclass method for storing and viewing DataState class attributes
+- Moved dataclasses to new script config.py
+- Created StatisticState dataclass for handling of stat arguments
+- Refactored outliers, skew_kurtosis scripts to use dataclass

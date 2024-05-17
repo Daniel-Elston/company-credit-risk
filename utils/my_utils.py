@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import re
 
+from config import StatisticState
 from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
 
 
-def stratified_random_sample(df, seed=42):
+def stratified_random_sample(df):
+    seed = StatisticState().random_state
     df_strat = df.groupby('Sector 1', group_keys=False).apply(
         lambda x: x.sample(min(len(x), int(0.1 * len(x))), random_state=seed))
     return df_strat

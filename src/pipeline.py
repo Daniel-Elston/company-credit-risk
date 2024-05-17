@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
-from dataclasses import field
-from dataclasses import fields
-from pprint import pprint
 
 import pandas as pd
 
+from config import DataState
+from config import StatisticState
 from src.data.make_dataset import LoadData
 from src.data.processing import InitialProcessor
 from src.data.quality_assessment import QualityAssessment
@@ -32,37 +30,14 @@ from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
 
 
-@dataclass
-class DataState:
-    df: pd.DataFrame = None
-    cont: list = field(default_factory=list)
-    disc: list = field(default_factory=list)
-    groups: dict = field(default_factory=dict)
-    trans_map: dict = field(default_factory=dict)
-    trans_funcs: dict = field(default_factory=dict)
-
-    def __post_init__(self):
-        print(f"Initialized DataState: {self}")
-
-    def print_state(self):
-        for field_info in fields(self):
-            attr_name = field_info.name
-            attr_value = getattr(self, attr_name)
-            if isinstance(attr_value, dict):
-                print(f"{attr_name}:------------------------------------------------------------------------------")
-                pprint(attr_value)
-            else:
-                print(f"{attr_name}:------------------------------------------------------------------------------")
-                print(attr_value)
-
-
 class DataPipeline:
     def __init__(self):
         self.ds = DataState()
+        self.ss = StatisticState()
         self.logger = logging.getLogger(self.ds.__class__.__name__)
-        # self.ds.df = pd.read_parquet(Path('data/interim/df_outliers_rem.parquet'))
-        # self.ds.cont, self.ds.disc = continuous_discrete(config, self.ds.df)
-        # self.ds.groups = group_features(self.ds.cont, self.ds.disc)
+        self.ds.df = pd.read_parquet('data/interim/df_outliers_rem.parquet')
+        self.ds.cont, self.ds.disc = continuous_discrete(config, self.ds.df)
+        self.ds.groups = group_features(self.ds.cont, self.ds.disc)
         self.ds.trans_map, self.ds.trans_funcs = StoreTransforms().get_transform_info()
 
     def run_make_dataset(self):
@@ -86,7 +61,6 @@ class DataPipeline:
         self.ds.df = build.pipeline(self.ds.df)
         self.ds.cont, self.ds.disc = continuous_discrete(config, self.ds.df)
         self.ds.groups = group_features(self.ds.cont, self.ds.disc)
-        self.ds.print_state()
 
     def run_handle_outliers(self):
         """Removes Outliers"""
@@ -99,16 +73,17 @@ class DataPipeline:
         Visualiser().pipeline(df_stratified, self.ds.groups, run_number)
         GenerateCorrAnalysis().pipeline(run_number)
 
-    def run_distribution_analysis(self, skew_weight=1, kurt_weight=1):
+    def run_distribution_analysis(self):
         """Run statistical analysis"""
         GenerateDistAnalysis().pipeline(self.ds.df, self.ds.cont, self.ds.trans_funcs)
-        EvaluateDistAnalysis().pipeline(skew_weight, kurt_weight)
+        print(self.ds.trans_funcs, '\n')
+        print(list(self.ds.trans_map.values()), '\n')
+        EvaluateDistAnalysis().pipeline(self.ss.skew_weight, self.ss.kurt_weight)
 
     def apply_transforms(self):
         """Apply transformations"""
         transform = ApplyTransforms()
-        self.ds.df = transform.pipeline(self.ds.df, self.ds.trans_map, shape_threshold=0)
-        self.ds.print_state()
+        self.ds.df = transform.pipeline(self.ds.df, self.ds.trans_map, self.ss.shape_threshold)
 
     def run_correlation_analysis(self):
         """Run correlation analysis"""
@@ -117,15 +92,15 @@ class DataPipeline:
 
     def main(self):
         try:
-            self.run_make_dataset()
-            self.run_quality_assessment()
-            self.run_initial_processing()
-            self.run_feature_engineering()
-            self.run_exploration(run_number='0')
+            # self.run_make_dataset()
+            # self.run_quality_assessment()
+            # self.run_initial_processing()
+            # self.run_feature_engineering()
+            # self.run_exploration(run_number='0')
 
-            self.run_handle_outliers()
+            # self.run_handle_outliers()
             # self.df.to_parquet(Path('data/interim/df_outliers_rem.parquet'))
-            self.run_exploration(run_number='1')
+            # self.run_exploration(run_number='1')
 
             self.run_distribution_analysis()
             self.apply_transforms()
