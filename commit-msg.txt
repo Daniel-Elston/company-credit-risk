@@ -1,15 +1,2 @@
-Feature Retrieval:
-- Dynamic approach to retrieving feature groupings
-- File name change: config_ops.py -> my_utils.py
-
-outliers.py:
-	- Removal of method get_cols
-
-exploration.py:
-	- Removal of amend_cols_list, in place of my_utils method group_features
-
-my_utils:
-	- Removal of amend_features, features_all_years and amend_cols_list
-	- Replaced with group_features
-	- Renamed get_feature_cols to select_featrue (and general cleaning of function)
-	- Added stratified_random_sample
+DataClass:
+- Added pipeline.py dataclass method for storing and viewing DataState class attributes
