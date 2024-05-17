@@ -59,6 +59,8 @@ class BuildFeatures:
         return df
 
     def pipeline(self, df, metric_cols, date_cols):
+        metric_cols = ['MScore', 'TAsset', 'Leverage', 'EBIT', 'Turnover', 'ROE', 'PLTax']
+        date_cols = ['2020', '2019', '2018', '2017', '2016', '2015']
         self.logger.debug(
             'Running BuildFeatures pipeline. Dataframe shape: %s', df.shape)
         df = self.build_growth(df, metric_cols, date_cols)

@@ -21,6 +21,7 @@ from utils.my_utils import group_features
 from utils.my_utils import stratified_random_sample
 from utils.setup_env import setup_project_env
 # import pandas as pd
+# import pandas as pd
 # from src.data.processing import FurtherProcessor
 # from utils.file_handler import load_json
 # from utils.file_handler import save_json
@@ -38,8 +39,7 @@ class DataPipeline:
     def run_make_dataset(self):
         """Loads PGSQL tables -> .parquet -> pd.DataFrame"""
         load = LoadData()
-        _, self.df, self.metric_cols, self.date_cols = load.pipeline(
-            config['export_tables'])
+        _, self.df = load.pipeline(config['export_tables'])
 
     def run_quality_assessment(self):
         """Generates quality assessment report"""
@@ -54,7 +54,7 @@ class DataPipeline:
     def run_feature_engineering(self):
         """Builds features"""
         build = BuildFeatures()
-        self.df = build.pipeline(self.df, self.metric_cols, self.date_cols)
+        self.df = build.pipeline(self.df)
         self.cont, self.disc = continuous_discrete(config, self.df)
         self.groups = group_features(self.cont, self.disc)
 
@@ -77,8 +77,7 @@ class DataPipeline:
     def apply_transforms(self):
         """Apply transformations"""
         transform = ApplyTransforms()
-        self.df = transform.pipeline(
-            self.df, self.trans_map, shape_threshold=0)
+        self.df = transform.pipeline(self.df, self.trans_map, shape_threshold=0)
 
     def run_correlation_analysis(self):
         """Run correlation analysis"""
@@ -86,25 +85,29 @@ class DataPipeline:
         AnalyseEigenValues().pipeline()
 
     def main(self):
-        self.run_make_dataset()
-        self.run_quality_assessment()
-        self.run_initial_processing()
-        self.run_feature_engineering()
-        self.run_exploration(run_number='0')
+        try:
+            self.run_make_dataset()
+            self.run_quality_assessment()
+            self.run_initial_processing()
+            self.run_feature_engineering()
+            self.run_exploration(run_number='0')
 
-        self.run_handle_outliers()
-        self.df.to_parquet(Path('data/interim/df_outliers_rem.parquet'))
-        self.run_exploration(run_number='1')
+            self.run_handle_outliers()
+            self.df.to_parquet(Path('data/interim/df_outliers_rem.parquet'))
+            self.run_exploration(run_number='1')
 
-        self.run_distribution_analysis()
-        self.apply_transforms()
-        self.run_exploration(run_number='2')
-        self.run_correlation_analysis()
+            self.run_distribution_analysis()
+            self.apply_transforms()
+            self.run_exploration(run_number='2')
+            self.run_correlation_analysis()
 
-        self.run_distribution_analysis()
-        self.apply_transforms()
-        self.run_exploration(run_number='3')
-        self.run_correlation_analysis()
+            self.run_distribution_analysis()
+            self.apply_transforms()
+            self.run_exploration(run_number='3')
+            self.run_correlation_analysis()
+        except Exception as e:
+            self.logger.exception(f'Error: {e}', exc_info=e)
+            raise
 
 
 if __name__ == '__main__':
