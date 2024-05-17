@@ -57,6 +57,10 @@ class AnalyseEigenValues:
 
     def pipeline(self):
         self.logger.info(
-            f'Generating Eigenvalues. Analysing files: ``{config["path"]["eigen"]}/exploration_n.csv``')
+            f'Generating Eigenvalues. Analysing files: ``{config['path']['correlation']}/*.csv``')
+
         for run_number in range(1, 4):
             self.analyze(run_number)
+
+        self.logger.info(
+            f'Eigenvalues Analysis results saved to: ``{config["path"]["eigen"]}/*``')

@@ -16,10 +16,7 @@ class GenerateDistAnalysis:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def apply_transformation(self, df, cols, transform_func):
-        return transform_func(df, cols)
-
-    def analyze_skew_and_kurtosis(self, df, cols, transform_func, file_idx):
+    def analyze_skew_and_kurtosis(self, df, cols, transform_func, transform_name):
         skew_store = []
         for column in cols:
             original_skew = skew(df[column].dropna())
@@ -39,10 +36,11 @@ class GenerateDistAnalysis:
             }
             skew_store.append(skew_dict)
 
-        filepath = Path(f'{config['path']['skew']}/{file_idx}.json')
+        filepath = Path(f'{config['path']['skew']}/{transform_name}.json')
         save_json(skew_store, filepath)
 
-    def pipeline(self, df, cols, trans_map):
+    def pipeline(self, df, trans_map, **kwargs):
+        cols = kwargs.get('cont')
         self.logger.info(
             'Generating Distribution Analysis Pipeline.')
 
@@ -57,9 +55,9 @@ class EvaluateDistAnalysis:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def load_results(self):
+    def load_results(self, trans_map):
         results = {}
-        for transform in config['trans_idx']:
+        for transform in trans_map.keys():
             filepath = Path(f'{config['path']['skew']}/{transform}.json')
             data = load_json(filepath)
             results[transform] = data
@@ -98,11 +96,11 @@ class EvaluateDistAnalysis:
         save_json(optimal_transforms, filepath)
         return optimal_transforms
 
-    def pipeline(self, skew_weight, kurt_weight):
+    def pipeline(self, trans_map, skew_weight, kurt_weight):
         self.logger.info(
             f'Running Evaluation of Distribution Analysis. Analysing files: ``{config['path']['skew']}/*.json`')
 
-        results = self.load_results()
+        results = self.load_results(trans_map)
         compiled_data = self.compile_transform_data(results)
         self.get_optimal_transform(compiled_data, skew_weight, kurt_weight)
 

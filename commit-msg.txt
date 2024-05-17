@@ -1,17 +1,5 @@
-Data Class:
-- Added and moving of dataclasses for attribute usage
-
-config.py:
-	- Moved DataState to pipeline.py
-
-transforms.py:
-	- StoreTransforms dataclass (read only) data class added
-	- Removed deprecated get_transforms_list and get_transform_info methods
-	- Just returning get_transform_maps
-
-skew_kurtosis.py:
-	- pipeline method accepts trans_map dict instead of trans_funcs list
-	- trans_map contains trans_funcs and trans_idx
-
-logging_config.py:
-	- Adjusted root config level for dynamic level changes from config.yaml
+Logging (& kwargs):
+- Adjusted logging statements throughout
+- Adjusted any metadata output to belong to debuging level
+- General info about pipeline progress and file saving as info level
+- Adjusted update_group_features to be passed as kwargs

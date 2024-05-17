@@ -69,7 +69,10 @@ class EvaluateCorrAnalysis:
     def pipeline(self):
         self.logger.info(
             f'Evaluating Correlation Analysis. Analysing files: ``{config['path']['correlation']}/corr_fro_results_n.json``')
+
         diff12, diff23, diff13 = self.get_fro_diff()
 
+        self.logger.debug(
+            'Frobenius Norm Differences: %s', diff13)
         self.logger.info(
-            'Correlation Analysis Completed. Frobenius Norm Differences: %s', diff13)
+            'Correlation Analysis Completed. Frobenius Norm Differences Generated')

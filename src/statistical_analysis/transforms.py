@@ -102,10 +102,13 @@ class ApplyTransforms:
         post_transform_kurtosis = self.calc_kurtosis(df_transform)
         df[cols] = df_transform[cols]
 
-        self.logger.info(
-            'Transforms applied. Pre-transform skew: %s. Post-transform skew: %s',
+        self.logger.debug(
+            'Pre-transform skew: %s. Post-transform skew: %s',
             pre_transform_skew, post_transform_skew)
-        self.logger.info(
-            'Transforms applied. Pre-transform kurtosis: %s. Post-transform kurtosis: %s',
+        self.logger.debug(
+            'Pre-transform kurtosis: %s. Post-transform kurtosis: %s',
             pre_transform_kurtosis, post_transform_kurtosis)
+
+        self.logger.info(
+            'Distribution Transformations Applied')
         return df

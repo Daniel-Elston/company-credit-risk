@@ -15,10 +15,10 @@ from src.data.quality_assessment import QualityAssessment
 from src.features.build_features import BuildFeatures
 from src.statistical_analysis.correlations import EvaluateCorrAnalysis
 from src.statistical_analysis.correlations import GenerateCorrAnalysis
+from src.statistical_analysis.dist_analysis import EvaluateDistAnalysis
+from src.statistical_analysis.dist_analysis import GenerateDistAnalysis
 from src.statistical_analysis.eiganvalues import AnalyseEigenValues
 from src.statistical_analysis.outliers import HandleOutliers
-from src.statistical_analysis.skew_kurtosis import EvaluateDistAnalysis
-from src.statistical_analysis.skew_kurtosis import GenerateDistAnalysis
 from src.statistical_analysis.transforms import ApplyTransforms
 from src.statistical_analysis.transforms import StoreTransforms
 from src.visualization.exploration import Visualiser
@@ -36,10 +36,8 @@ class DataState:
     df: pd.DataFrame = None
     trans: StoreTransforms = field(default_factory=StoreTransforms)
     logger: logging.Logger = field(default_factory=lambda: logging.getLogger(__name__))
-    trans_map: dict = field(init=False)
-    cont: list = field(init=False, default_factory=list)
-    disc: list = field(init=False, default_factory=list)
-    groups: dict = field(init=False, default_factory=dict)
+    trans_map: dict = field(init=False, default_factory=dict)
+    feature_groups: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         self.trans_map = self.trans.get_transform_map()
@@ -51,10 +49,7 @@ class DataState:
 
     def update_grouped_features(self):
         """Update continuous, discrete, and grouped features."""
-        grouped = grouped_features(config, self.df)
-        self.cont = grouped['cont']
-        self.disc = grouped['disc']
-        self.groups = grouped['groups']
+        self.feature_groups = grouped_features(config, self.df)
 
     def print_state(self):
         for field_info in fields(self):
@@ -73,7 +68,7 @@ class DataPipeline:
         self.ds = DataState()
         self.ss = StatisticState()
         self.logger = logging.getLogger(self.ds.__class__.__name__)
-        self.ds.df = pd.read_parquet('data/interim/df_test.parquet')
+        # self.ds.df = pd.read_parquet('data/interim/df_out.parquet')
 
     def run_make_dataset(self):
         """Loads PGSQL tables -> .parquet -> pd.DataFrame"""
@@ -98,26 +93,27 @@ class DataPipeline:
     def run_handle_outliers(self):
         """Removes Outliers"""
         outliers = HandleOutliers()
-        self.ds.df = outliers.pipeline(self.ds.df, self.ds.cont, self.ds.disc)
+        self.ds.df = outliers.pipeline(self.ds.df, **self.ds.feature_groups)
 
-    def run_exploration(self, run_number):
+    def run_exploration(self, run_n):
         """Visualise Stratified Data"""
         df_stratified = stratified_random_sample(self.ds.df)
-        Visualiser().pipeline(df_stratified, self.ds.groups, run_number)
-        GenerateCorrAnalysis().pipeline(run_number)
+        Visualiser().pipeline(df_stratified, run_n, **self.ds.feature_groups)
+        GenerateCorrAnalysis().pipeline(run_n)
 
     def run_distribution_analysis(self):
         """Run statistical analysis"""
-        GenerateDistAnalysis().pipeline(self.ds.df, self.ds.cont, self.ds.trans_map)
-        EvaluateDistAnalysis().pipeline(self.ss.skew_weight, self.ss.kurt_weight)
+        GenerateDistAnalysis().pipeline(self.ds.df, self.ds.trans_map, **self.ds.feature_groups)
+        EvaluateDistAnalysis().pipeline(self.ds.trans_map, self.ss.skew_weight, self.ss.kurt_weight)
 
     def apply_transforms(self):
         """Apply transformations"""
         transform = ApplyTransforms()
         self.ds.df = transform.pipeline(self.ds.df, self.ds.trans_map, self.ss.shape_threshold)
 
-    def run_correlation_analysis(self):
+    def run_correlation_analysis(self, run_n):
         """Run correlation analysis"""
+        GenerateCorrAnalysis().pipeline(run_n)
         EvaluateCorrAnalysis().pipeline()
         AnalyseEigenValues().pipeline()
 
@@ -128,20 +124,22 @@ class DataPipeline:
             self.run_initial_processing()
             self.run_feature_engineering()
             self.ds.update_grouped_features()
-            # self.run_exploration(run_number='0')
+            self.run_exploration(run_n=0)
+            self.run_handle_outliers()
 
-            # self.run_handle_outliers()
-            # self.run_exploration(run_number='1')
+            run_n = 1
+            self.run_exploration(run_n)
+            self.run_distribution_analysis()
+            self.apply_transforms()
 
-            # self.run_distribution_analysis()
-            # self.apply_transforms()
-            # self.run_exploration(run_number='2')
-            # self.run_correlation_analysis()
+            run_n = 2
+            self.run_exploration(run_n)
+            self.run_distribution_analysis()
+            self.apply_transforms()
 
-            # self.run_distribution_analysis()
-            # self.apply_transforms()
-            # self.run_exploration(run_number='3')
-            # self.run_correlation_analysis()
+            run_n = 3
+            self.run_exploration(run_n)
+            self.run_correlation_analysis(run_n)
 
         except Exception as e:
             self.logger.exception(f'Error: {e}', exc_info=e)

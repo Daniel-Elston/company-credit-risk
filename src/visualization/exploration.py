@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
+from time import time
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -61,9 +62,12 @@ class Visualiser:
             self.logger.info(f'Creating ``{dir_path}`` directory.')
             os.mkdir(dir_path)
 
-    def pipeline(self, df, groups, run_number):
+    def pipeline(self, df, run_number, **kwargs):
+        t1 = time()
+        groups = kwargs.get('groups')
+
         self.logger.info(
-            f'Running Visualiser Pipeline. Run Number {run_number}...')
+            f'Running Visualisation Pipeline. Exploration Run Number {run_number}...')
 
         dist_store, dist_names = list(groups.values())[:-2], list(groups.keys())[:-2]
         # corr_store, corr_names = list(groups.values())[:-1], list(groups.keys())[:-1]
@@ -77,5 +81,9 @@ class Visualiser:
         corr_mat = self.generate_heat_plot(df, groups['all'], f'exploration_{run_number}/corr_map_all')
         corr_mat.to_csv(Path(f'{config['path']['correlation']}/exploration_{run_number}.csv'))
 
+        t2 = time()
         self.logger.info(
-            f'Visualiser Pipeline Completed. Figures saved to: ``{config['path']['exploration']}/exploration_{run_number}/*.png``')
+            f'Visualisation Pipeline Completed. Figures saved to: ``{config['path']['exploration']}/exploration_{run_number}/*.png``')
+
+        tf = round(t2 - t1, 2)
+        self.logger.debug(f'Exploration Elapsed Time: {tf} seconds')
