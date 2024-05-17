@@ -16,31 +16,29 @@ class GenerateDistAnalysis:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
+    def analyze_column(self, df, column, transform_func):
+        original_skew = skew(df[column].dropna())
+        original_kurtosis = kurtosis(df[column].dropna())
+
+        transformed_df = transform_func(df.copy(), column)
+        transformed_skew = skew(transformed_df[column].dropna())
+        transformed_kurtosis = kurtosis(transformed_df[column].dropna())
+
+        return {
+            'Column': column,
+            'Original Skew': round(original_skew, 2),
+            'Transformed Skew': round(transformed_skew, 2),
+            'Original Kurtosis': round(original_kurtosis, 2),
+            'Transformed Kurtosis': round(transformed_kurtosis, 2)
+        }
+
     def analyze_skew_and_kurtosis(self, df, cols, transform_func, transform_name):
-        skew_store = []
-        for column in cols:
-            original_skew = skew(df[column].dropna())
-            original_kurtosis = kurtosis(df[column].dropna())
-
-            transformed_df = transform_func(df.copy(), column)
-
-            transformed_skew = skew(transformed_df[column].dropna())
-            transformed_kurtosis = kurtosis(transformed_df[column].dropna())
-
-            skew_dict = {
-                'Column': column,
-                'Original Skew': round(original_skew, 2),
-                'Transformed Skew': round(transformed_skew, 2),
-                'Original Kurtosis': round(original_kurtosis, 2),
-                'Transformed Kurtosis': round(transformed_kurtosis, 2)
-            }
-            skew_store.append(skew_dict)
-
+        skew_store = [self.analyze_column(df, column, transform_func) for column in cols]
         filepath = Path(f'{config['path']['skew']}/{transform_name}.json')
         save_json(skew_store, filepath)
 
     def pipeline(self, df, trans_map, **kwargs):
-        cols = kwargs.get('cont')
+        cols = kwargs['cont']
         self.logger.info(
             'Generating Distribution Analysis Pipeline.')
 
@@ -57,42 +55,46 @@ class EvaluateDistAnalysis:
 
     def load_results(self, trans_map):
         results = {}
-        for transform in trans_map.keys():
-            filepath = Path(f'{config['path']['skew']}/{transform}.json')
+        for transform_name in trans_map.keys():
+            filepath = Path(f'{config['path']['skew']}/{transform_name}.json')
             data = load_json(filepath)
-            results[transform] = data
+            results[transform_name] = data
         return results
 
     def compile_transform_data(self, data):
         """Retrieve transformed skew values for each column and transform"""
         column_transforms = {}
-        for transform, records in data.items():
-            for record in records:
-                column = record['Column']
-                skew_value = record['Transformed Skew']
-                kurtosis_value = record['Transformed Kurtosis']
-                if column not in column_transforms:
-                    column_transforms[column] = {}
-                column_transforms[column][transform] = (
-                    skew_value, kurtosis_value)
+        for transform_name, records in data.items():
+            for r in records:
+                column = r['Column']
+                column_transforms.setdefault(column, {})[transform_name] = (
+                    r['Transformed Skew'], r['Transformed Kurtosis'])
         return column_transforms
 
-    def get_optimal_transform(self, column_transforms, skew_weight, kurt_weight):
-        """Retrieve the transform with the lowest combined metric for each column"""
-        optimal_transforms = {}
-        for column, transforms in column_transforms.items():
-            min_metric = float('inf')
-            optimal_transform = None
-            for transform, (skew_value, kurtosis_value) in transforms.items():
-                combined_metric = abs(skew_value)*skew_weight + \
-                    abs(kurtosis_value)*kurt_weight
-                if combined_metric < min_metric:
-                    min_metric = combined_metric
-                    optimal_transform = transform
-            optimal_transforms[column] = (
-                optimal_transform, transforms[optimal_transform])
+    def get_combined_metric(self, skew_value, kurtosis_value, skew_weight, kurt_weight):
+        return abs(skew_value)*skew_weight + abs(kurtosis_value)*kurt_weight
 
-        filepath = Path(f'{config["path"]["skew"]}/transform_map.json')
+    def identify_transform(self, transforms, skew_weight, kurt_weight):
+        """Find the optimal transform with the lowest combined metric."""
+        min_metric = float('inf')
+        optimal_transform = None
+
+        for transform, (skew_value, kurtosis_value) in transforms.items():
+            combined_metric = self.get_combined_metric(skew_value, kurtosis_value, skew_weight, kurt_weight)
+            if combined_metric < min_metric:
+                min_metric = combined_metric
+                optimal_transform = transform
+        return optimal_transform
+
+    def retrieve_transform(self, column_transforms, skew_weight, kurt_weight):
+        """Retrieve the transform with the lowest combined metric for each column."""
+        optimal_transforms = {}
+
+        for column, transforms in column_transforms.items():
+            optimal_transform = self.identify_transform(transforms, skew_weight, kurt_weight)
+            optimal_transforms[column] = (optimal_transform, transforms[optimal_transform])
+
+        filepath = Path(f'{config["path"]["maps"]}/transform_map.json')
         save_json(optimal_transforms, filepath)
         return optimal_transforms
 
@@ -102,7 +104,7 @@ class EvaluateDistAnalysis:
 
         results = self.load_results(trans_map)
         compiled_data = self.compile_transform_data(results)
-        self.get_optimal_transform(compiled_data, skew_weight, kurt_weight)
+        self.retrieve_transform(compiled_data, skew_weight, kurt_weight)
 
         self.logger.info(
             f'Distribution Analysis Evaluation Completed. Results saved to: ``{config['path']['maps']}/transform_map.json``')

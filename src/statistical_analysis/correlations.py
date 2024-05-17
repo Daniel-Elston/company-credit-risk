@@ -38,12 +38,13 @@ class GenerateCorrAnalysis:
         filepath = Path(f'{config['path']['correlation']}/corr_fro_results_{run_number}.json')
         save_json(store, filepath)
 
-    def pipeline(self, run_number):
+    def pipeline(self):
         self.logger.info(
             f'Generating Correlation Analysis. Analysing files: ``{config['path']['correlation']}/exploration_n.csv``')
 
-        data = self.load_corr_store(run_number)
-        self.corr_frobenius_norm(data, run_number)
+        for run_number in range(1, 4):
+            data = self.load_corr_store(run_number)
+            self.corr_frobenius_norm(data, run_number)
 
         self.logger.info(
             f'Correlation Analysis Completed. Results saved to: ``{config['path']['correlation']}/corr_fro_results_n.json``')
@@ -55,8 +56,8 @@ class EvaluateCorrAnalysis:
 
     def get_fro_diff(self):
         fro_store = []
-        for i in range(1, 4):
-            filepath = Path(f'{config['path']['correlation']}/corr_fro_results_{i}.json')
+        for run_number in range(1, 4):
+            filepath = Path(f'{config['path']['correlation']}/corr_fro_results_{run_number}.json')
             data = load_json(filepath)
             frobenius_norm = data['fro']
             fro_store.append(frobenius_norm)

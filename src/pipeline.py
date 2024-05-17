@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from dataclasses import field
-from dataclasses import fields
 from pprint import pformat
 
 import pandas as pd
@@ -17,7 +16,8 @@ from src.statistical_analysis.correlations import EvaluateCorrAnalysis
 from src.statistical_analysis.correlations import GenerateCorrAnalysis
 from src.statistical_analysis.dist_analysis import EvaluateDistAnalysis
 from src.statistical_analysis.dist_analysis import GenerateDistAnalysis
-from src.statistical_analysis.eiganvalues import AnalyseEigenValues
+from src.statistical_analysis.eiganvalues import EvaluateEigenValues
+from src.statistical_analysis.eiganvalues import GenerateEigenValues
 from src.statistical_analysis.outliers import HandleOutliers
 from src.statistical_analysis.transforms import ApplyTransforms
 from src.statistical_analysis.transforms import StoreTransforms
@@ -50,17 +50,6 @@ class DataState:
     def update_grouped_features(self):
         """Update continuous, discrete, and grouped features."""
         self.feature_groups = grouped_features(config, self.df)
-
-    def print_state(self):
-        for field_info in fields(self):
-            attr_name = field_info.name
-            attr_value = getattr(self, attr_name)
-            if attr_name == 'trans' or attr_name == 'trans_map':
-                continue
-            if isinstance(attr_value, dict):
-                self.logger.debug(f"{attr_name}:\n{pformat(attr_value)}")
-            else:
-                self.logger.debug(f"{attr_name}: {attr_value}")
 
 
 class DataPipeline:
@@ -98,24 +87,34 @@ class DataPipeline:
     def run_exploration(self, run_n):
         """Visualise Stratified Data"""
         df_stratified = stratified_random_sample(self.ds.df)
-        Visualiser().pipeline(df_stratified, run_n, **self.ds.feature_groups)
-        GenerateCorrAnalysis().pipeline(run_n)
+        visualiser = Visualiser()
+        visualiser.pipeline(df_stratified, run_n, **self.ds.feature_groups)
 
     def run_distribution_analysis(self):
-        """Run statistical analysis"""
-        GenerateDistAnalysis().pipeline(self.ds.df, self.ds.trans_map, **self.ds.feature_groups)
-        EvaluateDistAnalysis().pipeline(self.ds.trans_map, self.ss.skew_weight, self.ss.kurt_weight)
+        """Runs distribution analysis"""
+        gen_dist_analysis = GenerateDistAnalysis()
+        gen_dist_analysis.pipeline(self.ds.df, self.ds.trans_map, **self.ds.feature_groups)
+        eval_dist_analysis = EvaluateDistAnalysis()
+        eval_dist_analysis.pipeline(self.ds.trans_map, self.ss.skew_weight, self.ss.kurt_weight)
 
     def apply_transforms(self):
-        """Apply transformations"""
+        """Applies the optimal transform to each continuous feature"""
         transform = ApplyTransforms()
         self.ds.df = transform.pipeline(self.ds.df, self.ds.trans_map, self.ss.shape_threshold)
 
-    def run_correlation_analysis(self, run_n):
-        """Run correlation analysis"""
-        GenerateCorrAnalysis().pipeline(run_n)
-        EvaluateCorrAnalysis().pipeline()
-        AnalyseEigenValues().pipeline()
+    def run_correlation_analysis(self):
+        """Runs correlation analysis"""
+        gen_corr_analysis = GenerateCorrAnalysis()
+        gen_corr_analysis.pipeline()
+        eval_corr_analysis = EvaluateCorrAnalysis()
+        eval_corr_analysis.pipeline()
+
+    def run_eigen_analysis(self):
+        """Runs eigenvalue analysis"""
+        gen_eigen_values = GenerateEigenValues()
+        gen_eigen_values.pipeline()
+        eval_eigen_values = EvaluateEigenValues()
+        eval_eigen_values.pipeline()
 
     def main(self):
         try:
@@ -127,19 +126,17 @@ class DataPipeline:
             self.run_exploration(run_n=0)
             self.run_handle_outliers()
 
-            run_n = 1
-            self.run_exploration(run_n)
+            self.run_exploration(run_n=1)
             self.run_distribution_analysis()
             self.apply_transforms()
 
-            run_n = 2
-            self.run_exploration(run_n)
+            self.run_exploration(run_n=2)
             self.run_distribution_analysis()
             self.apply_transforms()
 
-            run_n = 3
-            self.run_exploration(run_n)
-            self.run_correlation_analysis(run_n)
+            self.run_exploration(run_n=3)
+            self.run_correlation_analysis()
+            self.run_eigen_analysis()
 
         except Exception as e:
             self.logger.exception(f'Error: {e}', exc_info=e)

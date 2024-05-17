@@ -1,5 +1,27 @@
-Logging (& kwargs):
-- Adjusted logging statements throughout
-- Adjusted any metadata output to belong to debuging level
-- General info about pipeline progress and file saving as info level
-- Adjusted update_group_features to be passed as kwargs
+Refactor Pipeline:
+- General aim to clean up some code and pipeline.py flow
+
+pipeline.py:
+	- Reduced dataclass
+	- Separated concerns for run_exploration and GenerateCorrAnalysis
+	- run_correlation_analysis method added
+	- run_eigen_analysis method added
+	- Split lines for Class.pipeline() calls
+	- Removed multiple run_number argument requirements
+
+correlations.py
+	- Removed run_number arguments
+	- Iterating over exploration range
+
+dist_analysis.py
+	- Decomposed analyse_skew_and_kurtosis method for readability
+	- List comprehension for resource
+	- EvaluateDistAnalysis methods transform variable named transform_name for consistancy
+	- compile and get_optimal_transform decomposed for readability
+
+eigenvalues.py:
+	- AnalyseEigenValues class object split into Generate and Evaluate classes for consistancy and separation of concerns
+	-Removed analyze method
+
+file_handler.py
+	- Added save/load parquet functions

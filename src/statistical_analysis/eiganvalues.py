@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+from utils.file_handler import load_json
 from utils.file_handler import save_json
 from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
@@ -15,7 +16,7 @@ project_dir, config, setup_logs = setup_project_env()
 sns.set_theme(style="darkgrid")
 
 
-class AnalyseEigenValues:
+class GenerateEigenValues:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -31,7 +32,26 @@ class AnalyseEigenValues:
         }
         filepath = Path(f'{config["path"]["eigen"]}/eigen_values_{run_number}.json')
         save_json(store, filepath)
-        return corr_eig
+
+    def pipeline(self):
+        self.logger.info(
+            f'Generating Eigenvalues. Analysing files: ``{config["path"]["correlation"]}/*.csv``')
+        for run_number in range(1, 4):
+            data = self.load_corr_store(run_number)
+            self.corr_eigenvalues(data, run_number)
+
+        self.logger.info(
+            f'Eigenvalues Analysis results saved to: ``{config["path"]["eigen"]}/*``')
+
+
+class EvaluateEigenValues:
+    def __init__(self):
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+    def load_corr_store(self, run_number):
+        filepath = Path(f'{config["path"]["eigen"]}/eigen_values_{run_number}.json')
+        data = load_json(filepath)
+        return data
 
     def proportion_variance_explained(self, eigenvalues):
         total_variance = sum(eigenvalues)
@@ -49,18 +69,19 @@ class AnalyseEigenValues:
         plt.ylabel('Cumulative Proportion of Variance Explained')
         plt.savefig(Path(f'{config["path"]["eigen"]}/scree_{run_number}.png'))
 
-    def analyze(self, run_number):
-        data = self.load_corr_store(run_number)
-        eigenvalues = self.corr_eigenvalues(data, run_number)
-        self.plot_variance_explained(eigenvalues, run_number)
-        return eigenvalues
+    # def analyze(self, run_number):
+    #     data = self.load_corr_store(run_number)
+    #     eigenvalues = data['eigen_values']
+    #     self.plot_variance_explained(eigenvalues, run_number)
 
     def pipeline(self):
         self.logger.info(
             f'Generating Eigenvalues. Analysing files: ``{config['path']['correlation']}/*.csv``')
 
         for run_number in range(1, 4):
-            self.analyze(run_number)
+            data = self.load_corr_store(run_number)
+            eigenvalues = data['eigen_values']
+            self.plot_variance_explained(eigenvalues, run_number)
 
         self.logger.info(
             f'Eigenvalues Analysis results saved to: ``{config["path"]["eigen"]}/*``')
