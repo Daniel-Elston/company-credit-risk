@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import logging
+import timeit
 from dataclasses import dataclass
 from dataclasses import field
 from pprint import pformat
+from time import time
 
+import dask.dataframe as dd
 import pandas as pd
 
 from config import StatisticState
@@ -82,7 +85,9 @@ class DataPipeline:
     def run_handle_outliers(self):
         """Removes Outliers"""
         outliers = HandleOutliers()
+        self.ds.df = dd.from_pandas(self.ds.df, npartitions=10)
         self.ds.df = outliers.pipeline(self.ds.df, **self.ds.feature_groups)
+        self.ds.df = self.ds.df.compute()
 
     def run_exploration(self, run_n):
         """Visualise Stratified Data"""
@@ -117,31 +122,48 @@ class DataPipeline:
         eval_eigen_values.pipeline()
 
     def main(self):
+        t1 = time()
         try:
             self.run_make_dataset()
             self.run_quality_assessment()
             self.run_initial_processing()
             self.run_feature_engineering()
             self.ds.update_grouped_features()
-            self.run_exploration(run_n=0)
-            self.run_handle_outliers()
+            # self.run_exploration(run_n=0)
 
-            self.run_exploration(run_n=1)
-            self.run_distribution_analysis()
-            self.apply_transforms()
+            print(timeit.timeit(lambda: self.run_handle_outliers(), number=1))
+            print(self.ds.df.shape)
+            # print(timeit.timeit(lambda: self.run_exploration(run_n=1), number=1))
+            print(timeit.timeit(lambda: self.run_distribution_analysis(), number=1))
 
-            self.run_exploration(run_n=2)
-            self.run_distribution_analysis()
-            self.apply_transforms()
+            # self.run_exploration(run_n=1)
+            # self.run_distribution_analysis()
+            # self.apply_transforms()
 
-            self.run_exploration(run_n=3)
-            self.run_correlation_analysis()
-            self.run_eigen_analysis()
+            # self.run_exploration(run_n=2)
+            # self.run_distribution_analysis()
+            # self.apply_transforms()
 
+            # self.run_exploration(run_n=3)
+            # self.run_correlation_analysis()
+            # self.run_eigen_analysis()
         except Exception as e:
             self.logger.exception(f'Error: {e}', exc_info=e)
             raise
 
+        t2 = time()
+        total = round(t2 - t1, 2)
+        print(f'Pipeline Elapsed Time: {total} seconds')
+
 
 if __name__ == '__main__':
+    t1 = time()
+
     DataPipeline().main()
+
+    t2 = time()
+    total = round(t2 - t1, 2)
+    print(f'Pipeline Elapsed Time: {total} seconds')
+
+# exp t1 = 17.5
+# total run1 = 250

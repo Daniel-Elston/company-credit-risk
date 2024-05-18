@@ -45,10 +45,8 @@ class InitialProcessor:
     def encode_categorical(self, df):
         self.logger.debug('Encoding categories')
         label_encoder = LabelEncoder()
-        df['Combined_Sector'] = df['Sector 2'] + \
-            "_" + df['Sector 1']
-        df[['Combined_Sector']] = df[['Combined_Sector']].apply(
-            label_encoder.fit_transform)
+        df['Combined_Sector'] = df['Sector 2'] + "_" + df['Sector 1']
+        df[['Combined_Sector']] = df[['Combined_Sector']].apply(label_encoder.fit_transform)
         sector_map = {category: idx for idx, category in enumerate(label_encoder.classes_)}
 
         filepath = Path(f'{config['path']['sector_map']}/sector_map.json')

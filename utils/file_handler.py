@@ -24,3 +24,7 @@ def save_to_parquet(df, filepath):
 def load_from_parquet(filepath):
     table = pq.read_table(filepath)
     return table.to_pandas()
+
+
+if __name__ == '__main__':
+    print(load_from_parquet('data/interim/combined.parquet'))

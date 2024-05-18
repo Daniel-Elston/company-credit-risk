@@ -15,14 +15,15 @@ project_dir, config, setup_logs = setup_project_env()
 class GenerateDistAnalysis:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.dir_skew = Path(config['path']['skew'])
 
     def analyze_column(self, df, column, transform_func):
-        original_skew = skew(df[column].dropna())
-        original_kurtosis = kurtosis(df[column].dropna())
+        original_skew = skew(df[column])
+        original_kurtosis = kurtosis(df[column])
 
-        transformed_df = transform_func(df.copy(), column)
-        transformed_skew = skew(transformed_df[column].dropna())
-        transformed_kurtosis = kurtosis(transformed_df[column].dropna())
+        transformed_df = transform_func(df, column)
+        transformed_skew = skew(transformed_df[column])
+        transformed_kurtosis = kurtosis(transformed_df[column])
 
         return {
             'Column': column,
@@ -34,7 +35,7 @@ class GenerateDistAnalysis:
 
     def analyze_skew_and_kurtosis(self, df, cols, transform_func, transform_name):
         skew_store = [self.analyze_column(df, column, transform_func) for column in cols]
-        filepath = Path(f'{config['path']['skew']}/{transform_name}.json')
+        filepath = Path(f'{self.dir_skew}/{transform_name}.json')
         save_json(skew_store, filepath)
 
     def pipeline(self, df, trans_map, **kwargs):
@@ -46,17 +47,19 @@ class GenerateDistAnalysis:
             self.analyze_skew_and_kurtosis(df, cols, transform_func, transform_name)
 
         self.logger.info(
-            f'Distribution Analysis Generation Completed. Data saved to: ``{config['path']['skew']}/*.json``')
+            f'Distribution Analysis Generation Completed. Data saved to: ``{self.dir_skew}/*.json``')
 
 
 class EvaluateDistAnalysis:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.dir_skew = Path(config['path']['skew'])
+        self.dir_maps = Path(config['path']['maps'])
 
     def load_results(self, trans_map):
         results = {}
         for transform_name in trans_map.keys():
-            filepath = Path(f'{config['path']['skew']}/{transform_name}.json')
+            filepath = Path(f'{self.dir_skew}/{transform_name}.json')
             data = load_json(filepath)
             results[transform_name] = data
         return results
@@ -100,11 +103,21 @@ class EvaluateDistAnalysis:
 
     def pipeline(self, trans_map, skew_weight, kurt_weight):
         self.logger.info(
-            f'Running Evaluation of Distribution Analysis. Analysing files: ``{config['path']['skew']}/*.json`')
+            f'Running Evaluation of Distribution Analysis. Analysing files: ``{self.dir_skew}/*.json`')
 
         results = self.load_results(trans_map)
         compiled_data = self.compile_transform_data(results)
         self.retrieve_transform(compiled_data, skew_weight, kurt_weight)
 
         self.logger.info(
-            f'Distribution Analysis Evaluation Completed. Results saved to: ``{config['path']['maps']}/transform_map.json``')
+            f'Distribution Analysis Evaluation Completed. Results saved to: ``{self.dir_maps}/transform_map.json``')
+
+    # def analyze_skew_and_kurtosis(self, df: dd.DataFrame, cols: list[str], transform_func, transform_name: str):
+    #     skew_store = []
+    #     for column in cols:
+    #         result = delayed(self.analyze_column)(df, column, transform_func)
+    #         skew_store.append(result)
+
+    #     skew_store = delayed(skew_store).compute()
+    #     table = pa.Table.from_pylist(skew_store)
+    #     pq.write_table(table, f'{config["path"]["skew"]}/{transform_name}.parquet')

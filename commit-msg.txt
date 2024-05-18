@@ -1,27 +1,18 @@
-Refactor Pipeline:
-- General aim to clean up some code and pipeline.py flow
+Resource Management:
+- General improvements to code for optimisation
 
-pipeline.py:
-	- Reduced dataclass
-	- Separated concerns for run_exploration and GenerateCorrAnalysis
-	- run_correlation_analysis method added
-	- run_eigen_analysis method added
-	- Split lines for Class.pipeline() calls
-	- Removed multiple run_number argument requirements
+outliers.py:
+	- Use of Dask for scheduling tasks
+	- Removal of else/if tree
+	- Method dict used
+	- Reduced time from 40s to 10s
 
-correlations.py
-	- Removed run_number arguments
-	- Iterating over exploration range
+exploration.py:
+	- Removed unused methods
+	- Passing sliced df instead of slicing inside function
+	- Added directory path as class attributes
+	- Corr matrices saved as .parq
 
-dist_analysis.py
-	- Decomposed analyse_skew_and_kurtosis method for readability
-	- List comprehension for resource
-	- EvaluateDistAnalysis methods transform variable named transform_name for consistancy
-	- compile and get_optimal_transform decomposed for readability
-
-eigenvalues.py:
-	- AnalyseEigenValues class object split into Generate and Evaluate classes for consistancy and separation of concerns
-	-Removed analyze method
-
-file_handler.py
-	- Added save/load parquet functions
+dist_analysis:
+	- Removed .copy() and dropna() from analyze_column method
+	- Set dir paths as class attributes
