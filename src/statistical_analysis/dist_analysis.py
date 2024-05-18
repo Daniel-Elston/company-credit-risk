@@ -17,16 +17,16 @@ class GenerateDistAnalysis:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.dir_skew = Path(config['path']['skew'])
 
-    def analyze_column(self, df, column, transform_func):
-        original_skew = skew(df[column])
-        original_kurtosis = kurtosis(df[column])
+    def analyze_column(self, df, transformed_df):
+        original_skew = skew(df)
+        original_kurtosis = kurtosis(df)
 
-        transformed_df = transform_func(df, column)
-        transformed_skew = skew(transformed_df[column])
-        transformed_kurtosis = kurtosis(transformed_df[column])
+        # transformed_df = transform_func(df, column)
+        transformed_skew = skew(transformed_df)
+        transformed_kurtosis = kurtosis(transformed_df)
 
         return {
-            'Column': column,
+            'Column': df.columns[0],
             'Original Skew': round(original_skew, 2),
             'Transformed Skew': round(transformed_skew, 2),
             'Original Kurtosis': round(original_kurtosis, 2),
@@ -34,7 +34,12 @@ class GenerateDistAnalysis:
         }
 
     def analyze_skew_and_kurtosis(self, df, cols, transform_func, transform_name):
-        skew_store = [self.analyze_column(df, column, transform_func) for column in cols]
+        # skew_store = [self.analyze_column(df[column], transform_func(df, column)) for column in cols]
+        skew_store = []
+        for col in cols:
+            df = df[col]
+            transformed_df = transform_func(df, col)
+            skew_store.append(self.analyze_column(df, transformed_df))
         filepath = Path(f'{self.dir_skew}/{transform_name}.json')
         save_json(skew_store, filepath)
 
