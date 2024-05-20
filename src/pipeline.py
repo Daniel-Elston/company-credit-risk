@@ -2,14 +2,11 @@ from __future__ import annotations
 
 import logging
 import timeit
-from dataclasses import dataclass
-from dataclasses import field
-from pprint import pformat
 from time import time
 
 import dask.dataframe as dd
-import pandas as pd
 
+from config import DataState
 from config import StatisticState
 from src.data.make_dataset import LoadData
 from src.data.processing import InitialProcessor
@@ -23,36 +20,13 @@ from src.statistical_analysis.eiganvalues import EvaluateEigenValues
 from src.statistical_analysis.eiganvalues import GenerateEigenValues
 from src.statistical_analysis.outliers import HandleOutliers
 from src.statistical_analysis.transforms import ApplyTransforms
-from src.statistical_analysis.transforms import StoreTransforms
 from src.visualization.exploration import Visualiser
-from utils.my_utils import grouped_features
 from utils.my_utils import stratified_random_sample
 from utils.setup_env import setup_project_env
 # from src.data.processing import FurtherProcessor
 # from utils.file_handler import load_json
 # from utils.file_handler import save_json
 project_dir, config, setup_logs = setup_project_env()
-
-
-@dataclass
-class DataState:
-    df: pd.DataFrame = None
-    trans: StoreTransforms = field(default_factory=StoreTransforms)
-    logger: logging.Logger = field(default_factory=lambda: logging.getLogger(__name__))
-    trans_map: dict = field(init=False, default_factory=dict)
-    feature_groups: dict = field(init=False, default_factory=dict)
-
-    def __post_init__(self):
-        self.trans_map = self.trans.get_transform_map()
-        post_init_dict = {
-            'df': self.df,
-            'logger': self.logger
-        }
-        self.logger.debug(f"Initialized DataState: {pformat(post_init_dict)}")
-
-    def update_grouped_features(self):
-        """Update continuous, discrete, and grouped features."""
-        self.feature_groups = grouped_features(config, self.df)
 
 
 class DataPipeline:
@@ -130,15 +104,14 @@ class DataPipeline:
             self.run_feature_engineering()
             self.ds.update_grouped_features()
             # self.run_exploration(run_n=0)
-
-            print(timeit.timeit(lambda: self.run_handle_outliers(), number=1))
-            print(self.ds.df.shape)
-            # print(timeit.timeit(lambda: self.run_exploration(run_n=1), number=1))
-            print(timeit.timeit(lambda: self.run_distribution_analysis(), number=1))
+            self.run_handle_outliers()
 
             # self.run_exploration(run_n=1)
-            # self.run_distribution_analysis()
-            # self.apply_transforms()
+            self.run_distribution_analysis()
+            print(timeit.timeit(lambda: self.run_distribution_analysis(), number=1))
+
+            self.apply_transforms()
+            print(timeit.timeit(lambda: self.apply_transforms(), number=1))
 
             # self.run_exploration(run_n=2)
             # self.run_distribution_analysis()
@@ -152,18 +125,11 @@ class DataPipeline:
             raise
 
         t2 = time()
-        total = round(t2 - t1, 2)
-        print(f'Pipeline Elapsed Time: {total} seconds')
+        print(f'Pipeline Elapsed Time: {round(t2 - t1, 2)} seconds')
 
 
 if __name__ == '__main__':
-    t1 = time()
-
     DataPipeline().main()
-
-    t2 = time()
-    total = round(t2 - t1, 2)
-    print(f'Pipeline Elapsed Time: {total} seconds')
 
 # exp t1 = 17.5
 # total run1 = 250

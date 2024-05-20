@@ -27,4 +27,4 @@ def load_from_parquet(filepath):
 
 
 if __name__ == '__main__':
-    print(load_from_parquet('data/interim/combined.parquet'))
+    print(load_from_parquet('reports/analysis/skew_analysis/log.parquet'))

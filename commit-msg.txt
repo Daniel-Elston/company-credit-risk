@@ -1,18 +1,11 @@
-Resource Management:
-- General improvements to code for optimisation
+Resource Manage - Distribution Analysis:
+- Improved code reabaility, decomposed stacked list comprehensions, added docstrings, moved DataState dataclass
 
-outliers.py:
-	- Use of Dask for scheduling tasks
-	- Removal of else/if tree
-	- Method dict used
-	- Reduced time from 40s to 10s
+dist_analysis.py:
+	- Changed file path class attributes to save_path and load_path
+	- Decompoised analyze_skew_and_kurtosis tacked list comprehension into for loop
+	- Renamed **kwargs to **feature_groups
+	- Renamed retrieve_transforms argument column_transforms -> compiled_data
 
-exploration.py:
-	- Removed unused methods
-	- Passing sliced df instead of slicing inside function
-	- Added directory path as class attributes
-	- Corr matrices saved as .parq
-
-dist_analysis:
-	- Removed .copy() and dropna() from analyze_column method
-	- Set dir paths as class attributes
+config.py:
+	- Moved dataclass DataState from pipeline.py to config.py
