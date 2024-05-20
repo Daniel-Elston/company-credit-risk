@@ -80,15 +80,15 @@ class EvaluateDistAnalysis:
                     r['Transformed Skew'], r['Transformed Kurtosis'])
         return column_transforms
 
-    def get_combined_metric(self, skew_value, kurtosis_value, skew_weight, kurt_weight):
+    def _get_combined_metric(self, skew_value, kurtosis_value, skew_weight, kurt_weight):
         return abs(skew_value)*skew_weight + abs(kurtosis_value)*kurt_weight
 
-    def identify_transform(self, transforms, skew_weight, kurt_weight):
+    def identify_optimal_transform(self, transforms, skew_weight, kurt_weight):
         """Find the optimal transform with the lowest combined metric."""
         min_metric = float('inf')
         optimal_transform = None
         for transform, (skew_value, kurtosis_value) in transforms.items():
-            combined_metric = self.get_combined_metric(skew_value, kurtosis_value, skew_weight, kurt_weight)
+            combined_metric = self._get_combined_metric(skew_value, kurtosis_value, skew_weight, kurt_weight)
             if combined_metric < min_metric:
                 min_metric = combined_metric
                 optimal_transform = transform
@@ -98,12 +98,11 @@ class EvaluateDistAnalysis:
         """Retrieve the transform with the lowest combined metric for each column."""
         optimal_transforms = {}
         for column, transforms in compiled_data.items():
-            optimal_transform = self.identify_transform(transforms, skew_weight, kurt_weight)
+            optimal_transform = self.identify_optimal_transform(transforms, skew_weight, kurt_weight)
             optimal_transforms[column] = (optimal_transform, transforms[optimal_transform])
 
         filepath = Path(f'{self.save_path}/transform_map.json')
         save_json(optimal_transforms, filepath)
-        return optimal_transforms
 
     def pipeline(self, trans_map, skew_weight, kurt_weight):
         self.logger.info(
