@@ -59,11 +59,12 @@ class StoreTransforms:
 class ApplyTransforms:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.load_path = Path(config['path']['skew'])
 
-    def calc_skew(self, df):
+    def _calc_skew(self, df):
         return round((skew(df)).mean(), 2)
 
-    def calc_kurtosis(self, df):
+    def _calc_kurtosis(self, df):
         return round((df.kurtosis()).mean(), 2)
 
     def cols_to_transform(self, optimal_transforms, shape_threshold=0.1):
@@ -88,18 +89,17 @@ class ApplyTransforms:
     def pipeline(self, df, trans_map, shape_threshold):
         self.logger.info(
             'Applying Distribution Transformations.')
-        optimal_transforms = load_json(Path(f'{config['path']['skew']}/transform_map.json'))
+        optimal_transforms = load_json(Path(f'{self.load_path}/transform_map.json'))
         cols = self.cols_to_transform(optimal_transforms, shape_threshold)
 
-        df_transform = df[cols].copy()
-        pre_transform_skew = self.calc_skew(df_transform)
-        pre_transform_kurtosis = self.calc_kurtosis(df_transform)
+        pre_transform_skew = self._calc_skew(df[cols])
+        pre_transform_kurtosis = self._calc_kurtosis(df[cols])
 
         df_transform = self.apply_transforms(
-            df_transform, optimal_transforms, trans_map)
+            df[cols], optimal_transforms, trans_map)
 
-        post_transform_skew = self.calc_skew(df_transform)
-        post_transform_kurtosis = self.calc_kurtosis(df_transform)
+        post_transform_skew = self._calc_skew(df_transform)
+        post_transform_kurtosis = self._calc_kurtosis(df_transform)
         df[cols] = df_transform[cols]
 
         self.logger.debug(
