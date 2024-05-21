@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import gc
 import logging
-import timeit
 from time import time
 
 import dask.dataframe as dd
@@ -40,6 +40,7 @@ class DataPipeline:
         """Loads PGSQL tables -> .parquet -> pd.DataFrame"""
         load = LoadData()
         _, self.ds.df = load.pipeline(config['export_tables'])
+        # self.ds.df = stratified_random_sample(self.ds.df)
 
     def run_quality_assessment(self):
         """Generates quality assessment report"""
@@ -62,24 +63,28 @@ class DataPipeline:
         self.ds.df = dd.from_pandas(self.ds.df, npartitions=10)
         self.ds.df = outliers.pipeline(self.ds.df, **self.ds.feature_groups)
         self.ds.df = self.ds.df.compute()
+        gc.collect()
 
     def run_exploration(self, run_n):
         """Visualise Stratified Data"""
         df_stratified = stratified_random_sample(self.ds.df)
         visualiser = Visualiser()
         visualiser.pipeline(df_stratified, run_n, **self.ds.feature_groups)
+        gc.collect()
 
     def run_distribution_analysis(self):
         """Runs distribution analysis"""
         gen_dist_analysis = GenerateDistAnalysis()
         gen_dist_analysis.pipeline(self.ds.df, self.ds.trans_map, **self.ds.feature_groups)
         eval_dist_analysis = EvaluateDistAnalysis()
-        eval_dist_analysis.pipeline(self.ds.trans_map, self.ss.skew_weight, self.ss.kurt_weight)
+        eval_dist_analysis.pipeline(self.ds.trans_map)
+        gc.collect()
 
     def apply_transforms(self):
         """Applies the optimal transform to each continuous feature"""
         transform = ApplyTransforms()
         self.ds.df = transform.pipeline(self.ds.df, self.ds.trans_map, self.ss.shape_threshold)
+        gc.collect()
 
     def run_correlation_analysis(self):
         """Runs correlation analysis"""
@@ -103,23 +108,17 @@ class DataPipeline:
             self.run_initial_processing()
             self.run_feature_engineering()
             self.ds.update_grouped_features()
-            # self.run_exploration(run_n=0)
-            self.run_handle_outliers()
-
-            # self.run_exploration(run_n=1)
-            self.run_distribution_analysis()
-            print(timeit.timeit(lambda: self.run_distribution_analysis(), number=1))
-
-            self.apply_transforms()
-            print(timeit.timeit(lambda: self.apply_transforms(), number=1))
-
-            # self.run_exploration(run_n=2)
-            # self.run_distribution_analysis()
-            # self.apply_transforms()
-
-            # self.run_exploration(run_n=3)
-            # self.run_correlation_analysis()
-            # self.run_eigen_analysis()
+            self.run_exploration(run_n=0), gc.collect()
+            self.run_handle_outliers(), gc.collect()
+            self.run_exploration(run_n=1), gc.collect()
+            self.run_distribution_analysis(), gc.collect()
+            self.apply_transforms(), gc.collect()
+            self.run_exploration(run_n=2), gc.collect()
+            self.run_distribution_analysis(), gc.collect()
+            self.apply_transforms(), gc.collect()
+            self.run_exploration(run_n=3), gc.collect()
+            self.run_correlation_analysis()
+            self.run_eigen_analysis()
         except Exception as e:
             self.logger.exception(f'Error: {e}', exc_info=e)
             raise
@@ -131,5 +130,5 @@ class DataPipeline:
 if __name__ == '__main__':
     DataPipeline().main()
 
-# exp t1 = 17.5
-# total run1 = 250
+# total pipeline run1 time = 250s
+# total pipeline run2 time = 83s

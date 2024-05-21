@@ -5,6 +5,8 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+from joblib import delayed
+from joblib import Parallel
 
 from utils.file_handler import save_to_parquet
 from utils.setup_env import setup_project_env
@@ -22,6 +24,7 @@ class Visualiser:
             df, diag_kind='kde',
             plot_kws={'alpha': 0.8, 's': 2, 'edgecolor': 'k'})
         plt.savefig(Path(f'{self.dir_path}/{title}.png'))
+        plt.close()
 
     def generate_heat_plot(self, df, title):
         correlation_matrix = df.corr()
@@ -33,6 +36,7 @@ class Visualiser:
             annot_kws={"size": 8})
         plt.title(f'Correlation Matrix Heatmap for {title} Financial Metrics {config["year"]}')
         plt.savefig(Path(f'{self.dir_path}/{title}.png'))
+        plt.close()
         return correlation_matrix
 
     def exploration_filing(self, run_number):
@@ -48,15 +52,17 @@ class Visualiser:
         dist_store, dist_names = list(groups.values())[:-2], list(groups.keys())[:-2]
         corr_store, corr_names = list(groups.values())[:-1], list(groups.keys())[:-1]
 
-        for i, j in zip(dist_store, dist_names):
-            self.generate_pair_plot(df[i], f'exploration_{run_number}/pair_plot_{j}')
+        Parallel(n_jobs=4)(
+            delayed(self.generate_pair_plot)(
+                df[i], f'exploration_{run_number}/pair_plot_{j}')for i, j in zip(dist_store, dist_names))
 
-        for i, j in zip(corr_store, corr_names):
-            self.generate_heat_plot(df[i], f'exploration_{run_number}/corr_map_{j}')
+        Parallel(n_jobs=4)(
+            delayed(self.generate_heat_plot)(
+                df[i], f'exploration_{run_number}/corr_map_{j}')for i, j in zip(corr_store, corr_names))
 
         cols = groups['all']
         corr_mat = self.generate_heat_plot(df[cols], f'exploration_{run_number}/corr_map_all')
-        save_to_parquet(corr_mat, Path(f'{config['path']['correlation']}/exploration_{run_number}.csv'))
+        save_to_parquet(corr_mat, Path(f"{config['path']['correlation']}/exploration_{run_number}.csv"))
 
         self.logger.info(
             f'Visualisation Pipeline Completed. Figures saved to: ``{self.dir_path}/exploration_{run_number}/*.png``')

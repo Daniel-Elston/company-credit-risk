@@ -5,9 +5,9 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import seaborn as sns
 
+from utils.file_handler import load_from_parquet
 from utils.file_handler import load_json
 from utils.file_handler import save_json
 from utils.setup_env import setup_project_env
@@ -19,10 +19,12 @@ sns.set_theme(style="darkgrid")
 class GenerateEigenValues:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.load_path = Path(config['path']['correlation'])
+        self.save_path = Path(config['path']['eigen'])
 
     def load_corr_store(self, run_number):
-        filepath = Path(f'{config['path']['correlation']}/exploration_{run_number}.csv')
-        data = pd.read_csv(filepath, index_col=0)
+        filepath = Path(f'{self.load_path}/exploration_{run_number}.parquet')
+        data = load_from_parquet(filepath)
         return data
 
     def corr_eigenvalues(self, data, run_number):
@@ -30,26 +32,28 @@ class GenerateEigenValues:
         store = {
             'eigen_values': corr_eig.tolist()
         }
-        filepath = Path(f'{config["path"]["eigen"]}/eigen_values_{run_number}.json')
+        filepath = Path(f'{self.save_path}/eigen_values_{run_number}.json')
         save_json(store, filepath)
 
     def pipeline(self):
         self.logger.info(
-            f'Generating Eigenvalues. Analysing files: ``{config["path"]["correlation"]}/*.csv``')
+            f'Generating Eigenvalues. Analysing files: ``{self.load_path}/*.parquet``')
         for run_number in range(1, 4):
             data = self.load_corr_store(run_number)
             self.corr_eigenvalues(data, run_number)
 
         self.logger.info(
-            f'Eigenvalues Analysis results saved to: ``{config["path"]["eigen"]}/*``')
+            f'Eigenvalues Analysis results saved to: ``{self.save_path}/*``')
 
 
 class EvaluateEigenValues:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.load_path = Path(config['path']['eigen'])
+        self.save_path = Path(config['path']['eigen'])
 
     def load_corr_store(self, run_number):
-        filepath = Path(f'{config["path"]["eigen"]}/eigen_values_{run_number}.json')
+        filepath = Path(f'{self.load_path}/eigen_values_{run_number}.json')
         data = load_json(filepath)
         return data
 
@@ -69,14 +73,9 @@ class EvaluateEigenValues:
         plt.ylabel('Cumulative Proportion of Variance Explained')
         plt.savefig(Path(f'{config["path"]["eigen"]}/scree_{run_number}.png'))
 
-    # def analyze(self, run_number):
-    #     data = self.load_corr_store(run_number)
-    #     eigenvalues = data['eigen_values']
-    #     self.plot_variance_explained(eigenvalues, run_number)
-
     def pipeline(self):
         self.logger.info(
-            f'Generating Eigenvalues. Analysing files: ``{config['path']['correlation']}/*.csv``')
+            f'Generating Eigenvalues. Analysing files: ``{self.load_path}/*.json``')
 
         for run_number in range(1, 4):
             data = self.load_corr_store(run_number)
@@ -84,4 +83,4 @@ class EvaluateEigenValues:
             self.plot_variance_explained(eigenvalues, run_number)
 
         self.logger.info(
-            f'Eigenvalues Analysis results saved to: ``{config["path"]["eigen"]}/*``')
+            f'Eigenvalues Analysis results saved to: ``{self.save_path}/*``')

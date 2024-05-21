@@ -4,8 +4,8 @@ import logging
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
+from utils.file_handler import load_from_parquet
 from utils.file_handler import load_json
 from utils.file_handler import save_json
 from utils.setup_env import setup_project_env
@@ -15,10 +15,12 @@ project_dir, config, setup_logs = setup_project_env()
 class GenerateCorrAnalysis:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.load_path = Path(config['path']['correlation'])
+        self.save_path = Path(config['path']['correlation'])
 
     def load_corr_store(self, run_number):
-        filepath = Path(f'{config['path']['correlation']}/exploration_{run_number}.csv')
-        data = pd.read_csv(filepath, index_col=0)
+        filepath = Path(f'{self.load_path}/exploration_{run_number}.parquet')
+        data = load_from_parquet(filepath)
         return data
 
     def corr_frobenius_norm(self, data, run_number):
@@ -35,29 +37,30 @@ class GenerateCorrAnalysis:
             'avg': avg_corr,
             'fro': frobenius_norm,
         }
-        filepath = Path(f'{config['path']['correlation']}/corr_fro_results_{run_number}.json')
+        filepath = Path(f'{self.save_path}/corr_fro_results_{run_number}.json')
         save_json(store, filepath)
 
     def pipeline(self):
         self.logger.info(
-            f'Generating Correlation Analysis. Analysing files: ``{config['path']['correlation']}/exploration_n.csv``')
+            f'Generating Correlation Analysis. Analysing files: ``{self.load_path}/exploration_n.csv``')
 
         for run_number in range(1, 4):
             data = self.load_corr_store(run_number)
             self.corr_frobenius_norm(data, run_number)
 
         self.logger.info(
-            f'Correlation Analysis Completed. Results saved to: ``{config['path']['correlation']}/corr_fro_results_n.json``')
+            f'Correlation Analysis Completed. Results saved to: ``{self.save_path}/corr_fro_results_n.json``')
 
 
 class EvaluateCorrAnalysis:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.load_path = Path(config['path']['correlation'])
 
     def get_fro_diff(self):
         fro_store = []
         for run_number in range(1, 4):
-            filepath = Path(f'{config['path']['correlation']}/corr_fro_results_{run_number}.json')
+            filepath = Path(f'{self.load_path}/corr_fro_results_{run_number}.json')
             data = load_json(filepath)
             frobenius_norm = data['fro']
             fro_store.append(frobenius_norm)
@@ -69,7 +72,7 @@ class EvaluateCorrAnalysis:
 
     def pipeline(self):
         self.logger.info(
-            f'Evaluating Correlation Analysis. Analysing files: ``{config['path']['correlation']}/corr_fro_results_n.json``')
+            f'Evaluating Correlation Analysis. Analysing files: ``{self.load_path}/corr_fro_results_n.json``')
 
         diff12, diff23, diff13 = self.get_fro_diff()
 

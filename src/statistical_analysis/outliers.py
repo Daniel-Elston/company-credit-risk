@@ -60,7 +60,9 @@ class HandleOutliers:
             'dbscan': self._compute_dbscan_mask,
         }
         mask_func = method_function_mapping[method]
-        def partition_mask(df): return self.partition_mask(df, cols, mask_func)
+
+        def partition_mask(df):
+            return self.partition_mask(df, cols, mask_func)
 
         return ddf.map_partitions(partition_mask, meta=ddf)
 
@@ -74,34 +76,3 @@ class HandleOutliers:
 
         self.logger.info('Outlier Handling pipeline complete.')
         return ddf
-
-
-#     def pipeline(self, df, **kwargs):
-#         cont = kwargs.get('cont')
-#         self.logger.info(
-#             'Running Outlier Handling pipeline.')
-#         initial_shape = df.shape
-
-#         # df = self.replace_outliers(df, cont, method='lof')
-#         # self.logger.debug(
-#         #     'Data shape after lof: %s', df.shape)
-
-#         # df = self.replace_outliers(df, cont, method='iqr')
-#         # self.logger.debug(
-#         #     'Data shape after iqr: %s', df.shape)
-
-#         # df = self.replace_outliers(df, cont, method='zscore')
-#         # self.logger.debug(
-#         #     'Data shape after zscore: %s', df.shape)
-#         for method in ['lof', 'iqr', 'zscore']:
-#             df = self.replace_outliers(df, cont, method=method)
-#             self.logger.debug('Data shape after %s: %s', method, df.shape)
-
-#         processed_shape = df.shape
-#         shape_diff = (initial_shape[0] - processed_shape[0], initial_shape[1] - processed_shape[1])
-#         self.logger.debug(
-#             'Initial Shape: %s, Processed Shape: %s, Shape Difference: %s (Rows Removed: %s, Columns Changed: %s)',
-#             initial_shape, processed_shape, shape_diff, shape_diff[0], shape_diff[1])
-#         self.logger.info(
-#             'Outlier Handling pipeline complete.')
-#         return df

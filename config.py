@@ -37,8 +37,6 @@ class DataState:
 @dataclass
 class StatisticState:
     random_state: int = 42
-    skew_weight: float = 1
-    kurt_weight: float = 1
     shape_threshold: float = 0
     zscore_threshold: float = 12.0
     iqr_factor: float = 6.0

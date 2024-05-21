@@ -6,6 +6,7 @@ from dataclasses import field
 from pathlib import Path
 
 import numpy as np
+from scipy.stats import kurtosis
 from scipy.stats import skew
 from sklearn.preprocessing import PowerTransformer
 
@@ -59,20 +60,20 @@ class StoreTransforms:
 class ApplyTransforms:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.load_path = Path(config['path']['skew'])
+        self.load_path = Path(config['path']['maps'])
 
     def _calc_skew(self, df):
         return round((skew(df)).mean(), 2)
 
     def _calc_kurtosis(self, df):
-        return round((df.kurtosis()).mean(), 2)
+        return round((kurtosis(df)).mean(), 2)
 
-    def cols_to_transform(self, optimal_transforms, shape_threshold=0.1):
+    def cols_to_transform(self, optimal_transforms, shape_threshold):
         """Get columns that fall below Skew/Kurt threshold"""
         high_vals = {
             col: np.mean([abs(skew), abs(kurt)])
             for col, (transform, [skew, kurt]) in optimal_transforms.items()
-            if np.mean([abs(skew), abs(kurt)]) > shape_threshold}
+            if np.mean([abs(skew), abs(kurt)]) >= shape_threshold}
         return list(high_vals.keys())
 
     def apply_transforms(self, df_transform, optimal_transforms, trans_map):

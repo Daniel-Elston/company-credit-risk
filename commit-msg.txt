@@ -1,11 +1,28 @@
-Resource Manage - Distribution Analysis:
-- Improved code reabaility, decomposed stacked list comprehensions, added docstrings, moved DataState dataclass
+Resource Management (complete):
+- General restructuring and reformatting of code for optimisation
 
-dist_analysis.py:
-	- Changed file path class attributes to save_path and load_path
-	- Decompoised analyze_skew_and_kurtosis tacked list comprehension into for loop
-	- Renamed **kwargs to **feature_groups
-	- Renamed retrieve_transforms argument column_transforms -> compiled_data
+correlations.py:
+	- Added load/save_path class attr
+	- Now using .parq instead of .csv
 
-config.py:
-	- Moved dataclass DataState from pipeline.py to config.py
+dist_analysis.py
+	- Added df.copy() to analyze_column method
+	- Now utilising a stratified sampled dataframe
+	- Removed skew/kurt_weight arguments as they were not being implementd correctly
+
+eigenvalues:
+	- Added load/save_path attr
+	- Using .parq not .csv
+
+transforms.py:
+	- Corrected load_path class attr
+	- Used kurtosis(df) from scipy for consistency
+	- cols_to_transform method now >=
+
+exploration.py:
+	- Utilised joblib for parallel task execution
+	- Improved general readability
+	- plt.close() added
+
+pipeline.py:
+	- Added Garabage Collection
