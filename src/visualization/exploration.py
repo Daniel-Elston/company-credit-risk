@@ -17,13 +17,14 @@ project_dir, config, setup_logs = setup_project_env()
 class Visualiser:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.dir_path = Path(config["path"]["exploration"])
+        self.fig_path = Path(config["path"]["exploration"])
+        self.corr_path = Path(config["path"]["correlation"])
 
     def generate_pair_plot(self, df, title):
         sns.pairplot(
             df, diag_kind='kde',
             plot_kws={'alpha': 0.8, 's': 2, 'edgecolor': 'k'})
-        plt.savefig(Path(f'{self.dir_path}/{title}.png'))
+        plt.savefig(Path(f'{self.fig_path}/{title}.png'))
         plt.close()
 
     def generate_heat_plot(self, df, title):
@@ -35,7 +36,7 @@ class Visualiser:
             cmap=sns.diverging_palette(20, 220, as_cmap=True),
             annot_kws={"size": 8})
         plt.title(f'Correlation Matrix Heatmap for {title} Financial Metrics {config["year"]}')
-        plt.savefig(Path(f'{self.dir_path}/{title}.png'))
+        plt.savefig(Path(f'{self.fig_path}/{title}.png'))
         plt.close()
         return correlation_matrix
 
@@ -62,7 +63,7 @@ class Visualiser:
 
         cols = groups['all']
         corr_mat = self.generate_heat_plot(df[cols], f'exploration_{run_number}/corr_map_all')
-        save_to_parquet(corr_mat, Path(f"{config['path']['correlation']}/exploration_{run_number}.csv"))
+        save_to_parquet(corr_mat, Path(f"{self.corr_path}/exploration_{run_number}.csv"))
 
         self.logger.info(
-            f'Visualisation Pipeline Completed. Figures saved to: ``{self.dir_path}/exploration_{run_number}/*.png``')
+            f'Visualisation Pipeline Completed. Figures saved to: ``{self.fig_path}/exploration_{run_number}/*.png``')

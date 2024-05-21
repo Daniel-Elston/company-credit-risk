@@ -36,7 +36,7 @@ class GenerateDistAnalysis:
 
     def analyze_skew_and_kurtosis(self, df, cols, transform_func, transform_name):
         skew_store = [self.analyze_column(df, column, transform_func) for column in cols]
-        filepath = Path(f'{config['path']['skew']}/{transform_name}.json')
+        filepath = Path(f'{self.save_path}/{transform_name}.json')
         save_json(skew_store, filepath)
 
     def pipeline(self, df, trans_map, **feature_groups):

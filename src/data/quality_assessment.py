@@ -13,11 +13,12 @@ project_dir, config, setup_logs = setup_project_env()
 class QualityAssessment:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.save_path = Path(config['path']['eval_report'])
 
     def generate_exploratory_report(self, df, report_name, info_name):
         """Generate exploratory report"""
         self.logger.info(
-            f'Generating exploratory report. See results in ``{config['path']['eval_report']}`` directory')
+            f'Generating exploratory report. See results in ``{self.save_path}`` directory')
         report_data = {
             'Data_Type': [],
             'Zero_Count': [],
@@ -59,8 +60,8 @@ class QualityAssessment:
         report_df = pd.DataFrame(report_data, index=df.columns)
         statistics_df = round(df.describe(), 2)
 
-        report_path = Path(f'{config['path']['eval_report']}/{report_name}')
-        statistics_path = Path(f'{config['path']['eval_report']}/{info_name}')
+        report_path = Path(f'{self.save_path}/{report_name}')
+        statistics_path = Path(f'{self.save_path}/{info_name}')
 
         if os.path.isfile(report_path):
             pass

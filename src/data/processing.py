@@ -20,6 +20,7 @@ warnings.filterwarnings("ignore")
 class InitialProcessor:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.save_path = Path(config['path']['maps'])
 
     def remove_data(self, df):
         try:
@@ -49,7 +50,7 @@ class InitialProcessor:
         df[['Combined_Sector']] = df[['Combined_Sector']].apply(label_encoder.fit_transform)
         sector_map = {category: idx for idx, category in enumerate(label_encoder.classes_)}
 
-        filepath = Path(f'{config['path']['sector_map']}/sector_map.json')
+        filepath = Path(f'{self.save_path}/sector_map.json')
         if os.path.isfile(filepath):
             pass
         else:

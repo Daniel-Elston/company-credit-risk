@@ -71,7 +71,7 @@ class EvaluateEigenValues:
         plt.title(f"Proportion of Variance Explained - Run {run_number}")
         plt.xlabel('Number of Principal Components')
         plt.ylabel('Cumulative Proportion of Variance Explained')
-        plt.savefig(Path(f'{config["path"]["eigen"]}/scree_{run_number}.png'))
+        plt.savefig(Path(f'{self.save_path}/scree_{run_number}.png'))
 
     def pipeline(self):
         self.logger.info(

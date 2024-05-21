@@ -129,6 +129,3 @@ class DataPipeline:
 
 if __name__ == '__main__':
     DataPipeline().main()
-
-# total pipeline run1 time = 250s
-# total pipeline run2 time = 83s
