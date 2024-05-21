@@ -74,7 +74,7 @@ class EvaluateCorrAnalysis:
         self.logger.info(
             f'Evaluating Correlation Analysis. Analysing files: ``{self.load_path}/corr_fro_results_n.json``')
 
-        diff12, diff23, diff13 = self.get_fro_diff()
+        *_, diff13 = self.get_fro_diff()
 
         self.logger.debug(
             'Frobenius Norm Differences: %s', diff13)
