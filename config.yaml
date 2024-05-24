@@ -21,9 +21,9 @@ processed: data/interim/processed.parquet
 path:
   interim: data/interim
   eval_report: reports/analysis/eval_reports
-  # sector_map: reports/analysis/maps
   correlation: reports/analysis/correlation
   exploration: reports/figures
+  variance: reports/analysis/variance
   skew: reports/analysis/skew_analysis
   maps: reports/analysis/maps
   eigen: reports/analysis/eigenvalues

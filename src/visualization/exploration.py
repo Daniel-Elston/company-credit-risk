@@ -16,7 +16,6 @@ from utils.setup_env import setup_project_env
 
 warnings.filterwarnings("ignore")
 
-
 sns.set_theme(style="darkgrid")
 project_dir, config, setup_logs = setup_project_env()
 
@@ -26,6 +25,7 @@ class Visualiser:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.fig_path = Path(config["path"]["exploration"])
         self.corr_path = Path(config["path"]["correlation"])
+        self.var_path = Path(config["path"]["variance"])
 
     def generate_pair_plot(self, df, title):
         sns.pairplot(
@@ -47,7 +47,7 @@ class Visualiser:
         plt.close()
         return correlation_matrix
 
-    def generate_distance_corr_plot(self, df, title):
+    def generate_distance_corr_plot(self, df, title, run_number):
         columns = df.columns
         dist_corr_matrix = pd.DataFrame(index=columns, columns=columns)
         for col1 in columns:
@@ -67,7 +67,14 @@ class Visualiser:
         plt.title(f'Distance Correlation Heatmap for {title}')
         plt.savefig(Path(f'{self.fig_path}/{title}.png'))
         plt.close()
+        save_to_parquet(dist_corr_matrix, Path(f"{self.corr_path}/exploration_{run_number}.parquet"))
         return dist_corr_matrix
+
+    def compute_and_save_variance(self, df, run_number):
+        variance_matrix = round(df.var(), 2)
+        variance_matrix_df = pd.DataFrame(variance_matrix, columns=['Variance'])
+        save_to_parquet(variance_matrix_df, Path(f"{self.var_path}/exploration_{run_number}.parquet"))
+        return variance_matrix_df
 
     def exploration_filing(self, run_number):
         dir_path = Path(f'{self.path_exp}/exploration_{run_number}')
@@ -90,8 +97,10 @@ class Visualiser:
         for method in methods:
             self.generate_corr_plot(df[cols], f'exploration_{run_number}/corr_map_all_{method}', method=method)
 
-        corr_mat = self.generate_distance_corr_plot(df[cols], f'exploration_{run_number}/corr_map_all_dist')
-        save_to_parquet(corr_mat, Path(f"{self.corr_path}/exploration_{run_number}.parquet"))
+        self.generate_distance_corr_plot(df[cols], f'exploration_{run_number}/corr_map_all_dist', run_number)
+        self.compute_and_save_variance(df[cols], run_number)
 
+        self.logger.info(
+            f'Variance and Correlation Matrix saved to: reports/analysis/.../exploration_{run_number}.parquet')
         self.logger.info(
             f'Visualisation Pipeline Completed. Figures saved to: ``{self.fig_path}/exploration_{run_number}/*.png``')
