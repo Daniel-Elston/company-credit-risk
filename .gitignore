@@ -1,6 +1,5 @@
 
 commit-msg.txt
-reports/figures
 notebooks/*
 data/raw/*
 data/*.parquet
