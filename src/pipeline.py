@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import gc
 import logging
+from dataclasses import asdict
+from pathlib import Path
 from time import time
 
 import dask.dataframe as dd
@@ -21,11 +23,13 @@ from src.statistical_analysis.eiganvalues import GenerateEigenValues
 from src.statistical_analysis.outliers import HandleOutliers
 from src.statistical_analysis.transforms import ApplyTransforms
 from src.visualization.exploration import Visualiser
+from utils.file_handler import load_from_parquet
+from utils.file_handler import save_json
+from utils.file_handler import save_to_parquet
 from utils.my_utils import stratified_random_sample
 from utils.setup_env import setup_project_env
 # from src.data.processing import FurtherProcessor
 # from utils.file_handler import load_json
-# from utils.file_handler import save_json
 project_dir, config, setup_logs = setup_project_env()
 
 
@@ -34,7 +38,12 @@ class DataPipeline:
         self.ds = DataState()
         self.ss = StatisticState()
         self.logger = logging.getLogger(self.ds.__class__.__name__)
-        # self.ds.df = pd.read_parquet('data/interim/df_out.parquet')
+        self.save_path = Path(config['path']['interim'])
+        self.checkpoints = [
+            'raw',
+            'outliers',
+            'transform1',
+            'transform2',]
 
     def run_make_dataset(self):
         """Loads PGSQL tables -> .parquet -> pd.DataFrame"""
@@ -67,6 +76,7 @@ class DataPipeline:
 
     def run_exploration(self, run_n):
         """Visualise Stratified Data"""
+        self.ds.df = load_from_parquet(f'{self.save_path}/{self.checkpoints[run_n]}.parquet')
         df_stratified = stratified_random_sample(self.ds.df)
         visualiser = Visualiser()
         visualiser.pipeline(df_stratified, run_n, **self.ds.feature_groups)
@@ -85,6 +95,13 @@ class DataPipeline:
         transform = ApplyTransforms()
         self.ds.df = transform.pipeline(self.ds.df, self.ds.trans_map, self.ss.shape_threshold)
         gc.collect()
+
+    def run_checkpoint_exploration(self):
+        """Loads checkpoint dataset -> Exploratory Analysis -> Visualise Stratified Data"""
+        self.ds.df = load_from_parquet(f'{self.save_path}/{self.checkpoints[0]}.parquet')
+        self.ds.update_grouped_features()
+        for i in range(0, 4):
+            self.run_exploration(run_n=i), gc.collect()
 
     def run_correlation_analysis(self):
         """Runs correlation analysis"""
@@ -107,24 +124,29 @@ class DataPipeline:
             self.run_quality_assessment()
             self.run_initial_processing()
             self.run_feature_engineering()
+            save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[0]}.parquet')
+
             self.ds.update_grouped_features()
-            self.run_exploration(run_n=0), gc.collect()
             self.run_handle_outliers(), gc.collect()
-            self.run_exploration(run_n=1), gc.collect()
+            save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[1]}.parquet')
+
             self.run_distribution_analysis(), gc.collect()
             self.apply_transforms(), gc.collect()
-            self.run_exploration(run_n=2), gc.collect()
+            save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[2]}.parquet')
+
             self.run_distribution_analysis(), gc.collect()
             self.apply_transforms(), gc.collect()
-            self.run_exploration(run_n=3), gc.collect()
+            save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[3]}.parquet')
+
+            self.run_checkpoint_exploration()
             self.run_correlation_analysis()
             self.run_eigen_analysis()
         except Exception as e:
             self.logger.exception(f'Error: {e}', exc_info=e)
             raise
-
-        t2 = time()
-        print(f'Pipeline Elapsed Time: {round(t2 - t1, 2)} seconds')
+        finally:
+            save_json(asdict(self.ss), 'reports/analysis/statistic_state.json')
+        self.logger.info(f'Pipeline Elapsed Time: {round(time()-t1, 2)} seconds')
 
 
 if __name__ == '__main__':

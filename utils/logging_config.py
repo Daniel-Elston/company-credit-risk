@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging.config
 from pathlib import Path
+# import warnings
+# warnings.filterwarnings("ignore")
 
 
 def setup_logging(name, project_dir, log_file_name, config):
@@ -50,6 +52,26 @@ def setup_logging(name, project_dir, log_file_name, config):
                 'propagate': False
             },
             'PIL': {
+                'level': 'WARNING',
+                'handlers': ['console', 'file'],
+                'propagate': False
+            },
+            'ssa': {
+                'level': 'WARNING',
+                'handlers': ['console', 'file'],
+                'propagate': False
+            },
+            'numba.core.ssa': {
+                'level': 'WARNING',
+                'handlers': ['console', 'file'],
+                'propagate': False
+            },
+            'numba.core.byteflow': {
+                'level': 'WARNING',
+                'handlers': ['console', 'file'],
+                'propagate': False
+            },
+            'numba.core.interpreter': {
                 'level': 'WARNING',
                 'handlers': ['console', 'file'],
                 'propagate': False

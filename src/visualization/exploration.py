@@ -1,15 +1,22 @@
 from __future__ import annotations
 
 import logging
+import warnings
 from pathlib import Path
 
+import dcor
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 from joblib import delayed
 from joblib import Parallel
 
 from utils.file_handler import save_to_parquet
 from utils.setup_env import setup_project_env
+
+warnings.filterwarnings("ignore")
+
+
 sns.set_theme(style="darkgrid")
 project_dir, config, setup_logs = setup_project_env()
 
@@ -27,18 +34,40 @@ class Visualiser:
         plt.savefig(Path(f'{self.fig_path}/{title}.png'))
         plt.close()
 
-    def generate_heat_plot(self, df, title):
-        correlation_matrix = df.corr()
+    def generate_corr_plot(self, df, title, method='pearson'):
+        correlation_matrix = df.corr(method=method)
         plt.figure(figsize=(12, 10))
         sns.heatmap(
             correlation_matrix, annot=True, fmt=".2f",
             cbar=True, square=True, vmax=1, vmin=-1,
             cmap=sns.diverging_palette(20, 220, as_cmap=True),
             annot_kws={"size": 8})
-        plt.title(f'Correlation Matrix Heatmap for {title} Financial Metrics {config["year"]}')
+        plt.title(f'Correlation Matrix Heatmap for {title} (Method: {method})')
         plt.savefig(Path(f'{self.fig_path}/{title}.png'))
         plt.close()
         return correlation_matrix
+
+    def generate_distance_corr_plot(self, df, title):
+        columns = df.columns
+        dist_corr_matrix = pd.DataFrame(index=columns, columns=columns)
+        for col1 in columns:
+            for col2 in columns:
+                if col1 == col2:
+                    dist_corr_matrix.loc[col1, col2] = 1.0
+                else:
+                    dist_corr = dcor.distance_correlation(df[col1], df[col2])
+                    dist_corr_matrix.loc[col1, col2] = dist_corr
+
+        plt.figure(figsize=(12, 10))
+        sns.heatmap(
+            dist_corr_matrix.astype(float), annot=True, fmt=".2f",
+            cbar=True, square=True, vmax=1, vmin=-1,
+            cmap=sns.diverging_palette(20, 220, as_cmap=True),
+            annot_kws={"size": 8})
+        plt.title(f'Distance Correlation Heatmap for {title}')
+        plt.savefig(Path(f'{self.fig_path}/{title}.png'))
+        plt.close()
+        return dist_corr_matrix
 
     def exploration_filing(self, run_number):
         dir_path = Path(f'{self.path_exp}/exploration_{run_number}')
@@ -51,19 +80,18 @@ class Visualiser:
             f'Running Visualisation Pipeline. Exploration Run Number {run_number}...')
 
         dist_store, dist_names = list(groups.values())[:-2], list(groups.keys())[:-2]
-        corr_store, corr_names = list(groups.values())[:-1], list(groups.keys())[:-1]
+        methods = ['pearson', 'spearman', 'kendall']
+        cols = groups['all']
 
         Parallel(n_jobs=4)(
             delayed(self.generate_pair_plot)(
-                df[i], f'exploration_{run_number}/pair_plot_{j}')for i, j in zip(dist_store, dist_names))
+                df[i], f'exploration_{run_number}/pair_plot_{j}') for i, j in zip(dist_store, dist_names))
 
-        Parallel(n_jobs=4)(
-            delayed(self.generate_heat_plot)(
-                df[i], f'exploration_{run_number}/corr_map_{j}')for i, j in zip(corr_store, corr_names))
+        for method in methods:
+            self.generate_corr_plot(df[cols], f'exploration_{run_number}/corr_map_all_{method}', method=method)
 
-        cols = groups['all']
-        corr_mat = self.generate_heat_plot(df[cols], f'exploration_{run_number}/corr_map_all')
-        save_to_parquet(corr_mat, Path(f"{self.corr_path}/exploration_{run_number}.csv"))
+        corr_mat = self.generate_distance_corr_plot(df[cols], f'exploration_{run_number}/corr_map_all_dist')
+        save_to_parquet(corr_mat, Path(f"{self.corr_path}/exploration_{run_number}.parquet"))
 
         self.logger.info(
             f'Visualisation Pipeline Completed. Figures saved to: ``{self.fig_path}/exploration_{run_number}/*.png``')
