@@ -4,11 +4,12 @@ import logging
 from dataclasses import dataclass
 from dataclasses import field
 from pprint import pformat
+from pprint import pprint
 
 import pandas as pd
 
 from src.statistical_analysis.transforms import StoreTransforms
-from utils.my_utils import grouped_features
+from utils.my_utils import group_features
 from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
 
@@ -29,9 +30,10 @@ class DataState:
         }
         self.logger.debug(f"Initialized DataState: {pformat(post_init_dict)}")
 
-    def update_grouped_features(self):
+    def update_feature_groups(self):
         """Update continuous, discrete, and grouped features."""
-        self.feature_groups = grouped_features(config, self.df)
+        self.feature_groups = group_features(config, self.df)
+        pprint(self.feature_groups)
 
     def __repr__(self):
         return pformat(self.__dict__)

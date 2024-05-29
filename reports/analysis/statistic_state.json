@@ -1,0 +1,1 @@
+{"random_state": 42, "shape_threshold": 0, "zscore_threshold": 12.0, "iqr_factor": 6.0, "iqr_quantiles": [0.05, 0.95], "iso_contamination": 0.01, "lof_contamination": 0.05, "lof_n_neighbors": 20, "dbscan_eps": 0.5, "dbscan_min_samples": 5}

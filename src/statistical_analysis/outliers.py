@@ -66,8 +66,8 @@ class HandleOutliers:
 
         return ddf.map_partitions(partition_mask, meta=ddf)
 
-    def pipeline(self, ddf: dd.DataFrame, **kwargs) -> dd.DataFrame:
-        cont = kwargs.get('cont')
+    def pipeline(self, ddf: dd.DataFrame, **feature_groups) -> dd.DataFrame:
+        cont = feature_groups.get('continuous')
         self.logger.info('Running Outlier Handling pipeline.')
 
         for method in ['lof', 'iqr', 'zscore']:

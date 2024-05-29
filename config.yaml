@@ -40,13 +40,68 @@ export_tables:
   - t100k_121k
   # - tdescription
 
+
+nominal:
+- Company name
+- Region
+- Country
+- NACE code
+- Sector 1
+- Sector 2
+- Combined_Sector
+
+ordinal:
+- MScore_mean
+- growth_MScore_mean
+- volatility_MScore
+
 continuous:
-  - Turnover.
-  - EBIT.
-  - PLTax.
-  - Leverage.
-  - ROE.
-  - TAsset.
+- TAsset_mean
+- Leverage_mean
+- EBIT_mean
+- Turnover_mean
+- ROE_mean
+- PLTax_mean
+- growth_TAsset_mean
+- growth_Leverage_mean
+- growth_EBIT_mean
+- growth_Turnover_mean
+- growth_ROE_mean
+- growth_PLTax_mean
+- volatility_TAsset
+- volatility_Leverage
+- volatility_EBIT
+- volatility_Turnover
+- volatility_ROE
+- volatility_PLTax
+- fur_debt_to_eq
+- fur_op_marg
+- fur_asset_turnover
+- fur_roa
+
+
+
+raw_means:
+  - Turnover_mean
+  - EBIT_mean
+  - PLTax_mean
+  # - MScore.
+  - Leverage_mean
+  - ROE_mean
+  - TAsset_mean
+
+categoricals:
+- Company name
+- Region
+- Country
+- NACE code
+- Sector 1
+- Sector 2
+- Combined_Sector
+- MScore_mean
+- growth_MScore_mean
+- volatility_MScore
+
 
 raw_features:
   - Turnover.

@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import warnings
 from pathlib import Path
+from pprint import pprint
 
 import dcor
 import matplotlib.pyplot as plt
@@ -80,15 +81,18 @@ class Visualiser:
         dir_path = Path(f'{self.path_exp}/exploration_{run_number}')
         dir_path.mkdir(parents=True, exist_ok=True)
 
-    def pipeline(self, df, run_number, **kwargs):
-        groups = kwargs.get('groups')
+    def pipeline(self, df, run_number, **feature_groups):
+        continuous = feature_groups.get('continuous')
+        pprint(continuous)
 
         self.logger.info(
             f'Running Visualisation Pipeline. Exploration Run Number {run_number}...')
 
-        dist_store, dist_names = list(groups.values())[:-2], list(groups.keys())[:-2]
+        # dist_store, dist_names = list(groups.values())[:-2], list(groups.keys())[:-2]
+        dist_store, dist_names = continuous, continuous
         methods = ['pearson', 'spearman', 'kendall']
-        cols = groups['all']
+        # cols = groups['all']
+        cols = feature_groups.get('all')
 
         Parallel(n_jobs=4)(
             delayed(self.generate_pair_plot)(

@@ -40,7 +40,7 @@ class GenerateDistAnalysis:
         save_json(skew_store, filepath)
 
     def pipeline(self, df, trans_map, **feature_groups):
-        cols = feature_groups['cont']
+        cols = feature_groups['continuous']
         self.logger.info(
             'Generating Distribution Analysis Pipeline.')
 
