@@ -33,34 +33,21 @@ def select_feature(cont_cols, feature_name, dates, period):
 
 def group_features(config, df):
     continuous, nominal, ordinal = continuous_discrete(config, df)
+
     grow = select_feature(continuous, 'growth_', 'all', period=False)
-    # raw = select_feature(continuous, '', config['year'], period=True)
-    # raw_mean = select_feature(continuous, '_mean', 'all', period=False)
     raw_mean = config['raw_means']
     vol = select_feature(continuous, 'volatility', 'all', period=False)
     fur = select_feature(continuous, 'fur_', 'all', period=False)
-    msc = select_feature(ordinal, 'MScore', 'all', period=False)  # +['volatility_MScore']
-    all = grow + raw_mean + vol + fur + msc
-    return {
-        'continuous': continuous,
-        'nominal': nominal,
-        'ordinal': ordinal,
+    msc = select_feature(ordinal, 'MScore', 'all', period=False)
+    all_features = grow + raw_mean + vol + fur + msc
+    groups = {
+        'all': all_features,
+        'fur': fur,
         'grow': grow,
         'raw_mean': raw_mean,
-        'vol': vol,
-        'fur': fur,
-        'msc': msc,
-        'all': all
-    }
-
-
-def grouped_features(config, df):
-    """Get discrete/continuous columns and group features."""
-    continuous, nominal, ordinal = continuous_discrete(config, df)
-    groups = group_features(continuous, nominal, ordinal)
+        'vol': vol}
     return {
         'continuous': continuous,
         'nominal': nominal,
         'ordinal': ordinal,
-        'groups': groups
-    }
+        'groups': groups}

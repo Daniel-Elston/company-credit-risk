@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import warnings
 from pathlib import Path
-from pprint import pprint
 
 import dcor
 import matplotlib.pyplot as plt
@@ -82,29 +81,21 @@ class Visualiser:
         dir_path.mkdir(parents=True, exist_ok=True)
 
     def pipeline(self, df, run_number, **feature_groups):
-        continuous = feature_groups.get('continuous')
-        pprint(continuous)
-
         self.logger.info(
             f'Running Visualisation Pipeline. Exploration Run Number {run_number}...')
 
-        # dist_store, dist_names = list(groups.values())[:-2], list(groups.keys())[:-2]
-        dist_store, dist_names = continuous, continuous
+        groups = feature_groups.get('groups')
+        all_cols = groups['all']
+
+        dist_store, dist_names = list(groups.values())[1:], list(groups.keys())[1:]
         methods = ['pearson', 'spearman', 'kendall']
-        # cols = groups['all']
-        cols = feature_groups.get('all')
 
         Parallel(n_jobs=4)(
             delayed(self.generate_pair_plot)(
                 df[i], f'exploration_{run_number}/pair_plot_{j}') for i, j in zip(dist_store, dist_names))
 
         for method in methods:
-            self.generate_corr_plot(df[cols], f'exploration_{run_number}/corr_map_all_{method}', method=method)
+            self.generate_corr_plot(df[all_cols], f'exploration_{run_number}/corr_map_all_{method}', method=method)
 
-        self.generate_distance_corr_plot(df[cols], f'exploration_{run_number}/corr_map_all_dist', run_number)
-        self.compute_and_save_variance(df[cols], run_number)
-
-        self.logger.info(
-            f'Variance and Correlation Matrix saved to: reports/analysis/.../exploration_{run_number}.parquet')
-        self.logger.info(
-            f'Visualisation Pipeline Completed. Figures saved to: ``{self.fig_path}/exploration_{run_number}/*.png``')
+        self.generate_distance_corr_plot(df[all_cols], f'exploration_{run_number}/corr_map_all_dist', run_number)
+        self.compute_and_save_variance(df[all_cols], run_number)

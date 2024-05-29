@@ -4,7 +4,6 @@ import logging
 from dataclasses import dataclass
 from dataclasses import field
 from pprint import pformat
-from pprint import pprint
 
 import pandas as pd
 
@@ -33,7 +32,6 @@ class DataState:
     def update_feature_groups(self):
         """Update continuous, discrete, and grouped features."""
         self.feature_groups = group_features(config, self.df)
-        pprint(self.feature_groups)
 
     def __repr__(self):
         return pformat(self.__dict__)

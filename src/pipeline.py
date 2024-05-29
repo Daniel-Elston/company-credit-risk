@@ -99,9 +99,13 @@ class DataPipeline:
     def run_checkpoint_exploration(self):
         """Loads checkpoint dataset -> Exploratory Analysis -> Visualise Stratified Data"""
         self.ds.df = load_from_parquet(f'{self.save_path}/{self.checkpoints[0]}.parquet')
-        # self.ds.update_feature_groups()
+        self.ds.update_feature_groups()
         for i in range(0, 4):
             self.run_exploration(run_n=i), gc.collect()
+        self.logger.info(
+            'Variance and Correlation Matrix saved to: reports/analysis/.../exploration_n.parquet')
+        self.logger.info(
+            'Visualisation Pipeline Completed. Figures saved to: ``reports/figures/exploration_n/*.png``')
 
     def run_correlation_analysis(self):
         """Runs correlation analysis"""
@@ -124,29 +128,15 @@ class DataPipeline:
             self.run_quality_assessment()
             self.run_initial_processing()
             self.run_feature_engineering()
-
-            mask = self.ds.df.isna().sum() > 0
-            print(self.ds.df.isna().sum()[mask])
-            print(self.ds.df.isna().sum()[mask].sum())
-
             save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[0]}.parquet')
 
             self.ds.update_feature_groups()
-            print(self.ds.feature_groups)
             self.run_handle_outliers(), gc.collect()
             save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[1]}.parquet')
-
-            mask = self.ds.df.isna().sum() > 0
-            print(self.ds.df.isna().sum()[mask])
-            print(self.ds.df.isna().sum()[mask].sum())
 
             self.run_distribution_analysis(), gc.collect()
             self.apply_transforms(), gc.collect()
             save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[2]}.parquet')
-
-            mask = self.ds.df.isna().sum() > 0
-            print(self.ds.df.isna().sum()[mask])
-            print(self.ds.df.isna().sum()[mask].sum())
 
             self.run_distribution_analysis(), gc.collect()
             self.apply_transforms(), gc.collect()

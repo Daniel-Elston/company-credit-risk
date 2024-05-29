@@ -79,8 +79,6 @@ continuous:
 - fur_asset_turnover
 - fur_roa
 
-
-
 raw_means:
   - Turnover_mean
   - EBIT_mean
@@ -89,52 +87,6 @@ raw_means:
   - Leverage_mean
   - ROE_mean
   - TAsset_mean
-
-categoricals:
-- Company name
-- Region
-- Country
-- NACE code
-- Sector 1
-- Sector 2
-- Combined_Sector
-- MScore_mean
-- growth_MScore_mean
-- volatility_MScore
-
-
-raw_features:
-  - Turnover.
-  - EBIT.
-  - PLTax.
-  # - MScore.
-  - Leverage.
-  - ROE.
-  - TAsset.
-
-growth_features:
-  - growth_TAsset
-  - growth_EBIT
-  # - growth_MScore.
-  - growth_PLTax
-  - growth_Turnover
-  - growth_Leverage
-  - growth_ROE
-
-volatility_features:
-  - volatility_TAsset
-  - volatility_EBIT
-  # - volatility_MScore
-  - volatility_PLTax
-  - volatility_Turnover
-  - volatility_Leverage
-  - volatility_ROE
-
-further_features:
-  - fur_debt_to_eq
-  - fur_op_marg
-  - fur_asset_turnover
-  - fur_roa
 
 trans_idx:
   # - log
