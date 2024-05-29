@@ -33,6 +33,9 @@ class DataState:
         """Update continuous, discrete, and grouped features."""
         self.feature_groups = grouped_features(config, self.df)
 
+    def __repr__(self):
+        return pformat(self.__dict__)
+
 
 @dataclass
 class StatisticState:

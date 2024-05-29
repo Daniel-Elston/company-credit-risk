@@ -82,7 +82,7 @@ further_features:
   - fur_roa
 
 trans_idx:
-  - log
+  # - log
   - sqrt
   - inv_sqrt
   - inv
