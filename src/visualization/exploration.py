@@ -16,8 +16,10 @@ from utils.setup_env import setup_project_env
 
 warnings.filterwarnings("ignore")
 
-sns.set_theme(style="darkgrid")
 project_dir, config, setup_logs = setup_project_env()
+
+sns.set_theme(style="darkgrid")
+sns.set(font_scale=0.7)
 
 
 class Visualiser:
@@ -41,7 +43,7 @@ class Visualiser:
             correlation_matrix, annot=True, fmt=".2f",
             cbar=True, square=True, vmax=1, vmin=-1,
             cmap=sns.diverging_palette(20, 220, as_cmap=True),
-            annot_kws={"size": 8})
+            annot_kws={"size": 7})
         plt.title(f'Correlation Matrix Heatmap for {title} (Method: {method})')
         plt.savefig(Path(f'{self.fig_path}/{title}.png'))
         plt.close()
@@ -63,7 +65,7 @@ class Visualiser:
             dist_corr_matrix.astype(float), annot=True, fmt=".2f",
             cbar=True, square=True, vmax=1, vmin=-1,
             cmap=sns.diverging_palette(20, 220, as_cmap=True),
-            annot_kws={"size": 8})
+            annot_kws={"size": 7})
         plt.title(f'Distance Correlation Heatmap for {title}')
         plt.savefig(Path(f'{self.fig_path}/{title}.png'))
         plt.close()
