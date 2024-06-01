@@ -11,9 +11,11 @@ import dask.dataframe as dd
 from config import DataState
 from config import StatisticState
 from src.data.make_dataset import LoadData
+from src.data.processing import FurtherProcessor
 from src.data.processing import InitialProcessor
 from src.data.quality_assessment import QualityAssessment
 from src.features.build_features import BuildFeatures
+from src.features.pca import PrincipleComponentsAnalysis
 from src.statistical_analysis.correlations import EvaluateCorrAnalysis
 from src.statistical_analysis.correlations import GenerateCorrAnalysis
 from src.statistical_analysis.dist_analysis import EvaluateDistAnalysis
@@ -25,7 +27,6 @@ from src.statistical_analysis.transforms import ApplyTransforms
 from src.visualization.exploration import Visualiser
 from utils.file_handler import load_from_parquet
 from utils.file_handler import save_json
-from utils.file_handler import save_to_parquet
 from utils.my_utils import stratified_random_sample
 from utils.setup_env import setup_project_env
 # from src.data.processing import FurtherProcessor
@@ -121,30 +122,43 @@ class DataPipeline:
         eval_eigen_values = EvaluateEigenValues()
         eval_eigen_values.pipeline()
 
+    def apply_scaling(self):
+        scale = FurtherProcessor()
+        self.ds.df = scale.pipeline(self.ds.df, **self.ds.feature_groups)
+
+    def run_pca(self):
+        pca = PrincipleComponentsAnalysis()
+        self.ds.df_pca = pca.pipeline(self.ds.df, **self.ds.feature_groups)
+
     def main(self):
         t1 = time()
         try:
-            self.run_make_dataset()
-            self.run_quality_assessment()
-            self.run_initial_processing()
-            self.run_feature_engineering()
-            save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[0]}.parquet')
+            # self.run_make_dataset()
+            # self.run_quality_assessment()
+            # self.run_initial_processing()
+            # self.run_feature_engineering()
+            # save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[0]}.parquet')
 
+            # self.run_handle_outliers(), gc.collect()
+            # save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[1]}.parquet')
+
+            # self.run_distribution_analysis(), gc.collect()
+            # self.apply_transforms(), gc.collect()
+            # save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[2]}.parquet')
+
+            # self.run_distribution_analysis(), gc.collect()
+            # self.apply_transforms(), gc.collect()
+            # save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[3]}.parquet')
+
+            # self.run_checkpoint_exploration()
+            # self.run_correlation_analysis()
+            # self.run_eigen_analysis()
+
+            self.ds.df = load_from_parquet(f'{self.save_path}/{self.checkpoints[3]}.parquet')
             self.ds.update_feature_groups()
-            self.run_handle_outliers(), gc.collect()
-            save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[1]}.parquet')
+            self.apply_scaling()
+            self.run_pca()
 
-            self.run_distribution_analysis(), gc.collect()
-            self.apply_transforms(), gc.collect()
-            save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[2]}.parquet')
-
-            self.run_distribution_analysis(), gc.collect()
-            self.apply_transforms(), gc.collect()
-            save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[3]}.parquet')
-
-            self.run_checkpoint_exploration()
-            self.run_correlation_analysis()
-            self.run_eigen_analysis()
         except Exception as e:
             self.logger.exception(f'Error: {e}', exc_info=e)
             raise

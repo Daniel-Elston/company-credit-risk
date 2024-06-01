@@ -20,11 +20,13 @@ class DataState:
     logger: logging.Logger = field(default_factory=lambda: logging.getLogger(__name__))
     trans_map: dict = field(init=False, default_factory=dict)
     feature_groups: dict = field(init=False, default_factory=dict)
+    df_pca: pd.DataFrame = None
 
     def __post_init__(self):
         self.trans_map = self.trans.get_transform_map()
         post_init_dict = {
             'df': self.df,
+            'df_pca': self.df_pca,
             'logger': self.logger
         }
         self.logger.debug(f"Initialized DataState: {pformat(post_init_dict)}")
@@ -49,3 +51,5 @@ class StatisticState:
     lof_n_neighbors: int = 20
     dbscan_eps: float = 0.5
     dbscan_min_samples: int = 5
+    var_threshold: float = 0.1
+    n_components: int = 6

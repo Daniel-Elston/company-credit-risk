@@ -5,7 +5,6 @@ import os
 import warnings
 from pathlib import Path
 
-import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
@@ -82,14 +81,15 @@ class FurtherProcessor:
 
     def scale_data(self, df):
         scaler = StandardScaler()
-        df_numeric = df.select_dtypes(include=[np.number])
-        scale_cols = df_numeric.columns
-        df[scale_cols] = scaler.fit_transform(df[scale_cols])
+        df = scaler.fit_transform(df)
         return df
 
-    def pipeline(self, df, groups):
+    def pipeline(self, df, **feature_groups):
         self.logger.info(
             'Running FurtherProcessor pipeline. Data shape: %s', df.shape)
+        df = df[feature_groups['continuous']]
+
+        self.scale_data(df)
 
         self.logger.info(
             'FurtherProcessor pipeline complete. Data shape: %s', df.shape)
