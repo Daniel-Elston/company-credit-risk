@@ -13,7 +13,7 @@ def stratified_random_sample(df):
     return df_strat
 
 
-def continuous_discrete(config, df):
+def continuous_discrete(df):
     continuous = df.columns[df.columns.str.contains('|'.join(config['continuous']))]
     nominal = df.columns[df.columns.str.contains('|'.join(config['nominal']))]
     ordinal = df.columns[df.columns.str.contains('|'.join(config['ordinal']))]
@@ -31,8 +31,8 @@ def select_feature(cont_cols, feature_name, dates, period):
     return [col for col in feature_cols if dates in col]
 
 
-def group_features(config, df):
-    continuous, nominal, ordinal = continuous_discrete(config, df)
+def group_features(df):
+    continuous, nominal, ordinal = continuous_discrete(df)
 
     grow = select_feature(continuous, 'growth_', 'all', period=False)
     raw_mean = config['raw_means']

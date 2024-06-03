@@ -7,27 +7,27 @@ import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import VarianceThreshold
 
-from config import StatisticState
+from config import ModelConfig
 from utils.setup_env import setup_project_env
-project_dir, config, setup_logs = setup_project_env()
+project_dir, project_config, setup_logs = setup_project_env()
 
 warnings.filterwarnings("ignore")
 
 
 class PrincipleComponentsAnalysis:
-    def __init__(self):
-        self.ss = StatisticState()
+    def __init__(self, config: ModelConfig):
+        self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def feature_selection_variance(self, df):
         """Select features based on variance threshold."""
-        selector = VarianceThreshold(self.ss.var_threshold)
+        selector = VarianceThreshold(self.config.var_threshold)
         selected_data = selector.fit_transform(df)
         return pd.DataFrame(selected_data, columns=df.columns[selector.get_support()])
 
     def perform_pca(self, df):
         """Perform PCA on the scaled data."""
-        pca = PCA(n_components=self.ss.n_components)
+        pca = PCA(n_components=self.config.n_components)
         pca_data = pca.fit_transform(df)
         explained_variance = pca.explained_variance_ratio_
         pca_columns = [f'PC{i+1}' for i in range(pca_data.shape[1])]

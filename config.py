@@ -10,7 +10,7 @@ import pandas as pd
 from src.statistical_analysis.transforms import StoreTransforms
 from utils.my_utils import group_features
 from utils.setup_env import setup_project_env
-project_dir, config, setup_logs = setup_project_env()
+project_dir, project_config, setup_logs = setup_project_env()
 
 
 @dataclass
@@ -33,14 +33,15 @@ class DataState:
 
     def update_feature_groups(self):
         """Update continuous, discrete, and grouped features."""
-        self.feature_groups = group_features(config, self.df)
+        # self.feature_groups = group_features(config, self.df)
+        self.feature_groups = group_features(self.df)
 
     def __repr__(self):
         return pformat(self.__dict__)
 
 
 @dataclass
-class StatisticState:
+class StatisticConfig:
     random_state: int = 42
     shape_threshold: float = 0
     zscore_threshold: float = 12.0
@@ -51,13 +52,13 @@ class StatisticState:
     lof_n_neighbors: int = 20
     dbscan_eps: float = 0.5
     dbscan_min_samples: int = 5
-    var_threshold: float = 0.1
-    n_components: int = 3
 
 
 @dataclass
-class ModelState:
+class ModelConfig:
     random_state: int = 42
+    var_threshold: float = 0.1
+    n_components: int = 3
     n_clusters: int = 4
     eps: float = 0.5
     min_samples: int = 5

@@ -12,18 +12,18 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import davies_bouldin_score
 from sklearn.metrics import silhouette_score
 
-from config import ModelState
+from config import ModelConfig
 from utils.setup_env import setup_project_env
 
-project_dir, config, setup_logs = setup_project_env()
+project_dir, project_config, setup_logs = setup_project_env()
 
 
 class ClusteringTool:
-    def __init__(self):
-        self.ms = ModelState()
+    def __init__(self, config: ModelConfig):
+        self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.fig_path = Path(config["path"]["exploration"])
-        self.cluster_path = Path(config["path"]["clustering"])
+        self.fig_path = Path(project_config["path"]["exploration"])
+        self.cluster_path = Path(project_config["path"]["clustering"])
 
     def fit_model(self, df, method, **kwargs):
         """Fit clustering model based on method"""
@@ -71,7 +71,7 @@ class ClusteringTool:
         """Pipeline to run multiple clustering analyses."""
         metrics = {}
 
-        for method in self.ms.clustering_methods:
+        for method in self.config.clustering_methods:
             model, labels = self.fit_model(df, method=method, **clustering_params.get(method, {}))
             silhouette_avg, db_index = self.evaluate_clustering(df, labels)
             metrics[method] = {
