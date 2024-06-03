@@ -5,6 +5,8 @@ from dataclasses import asdict
 from pathlib import Path
 from time import time
 
+import numpy as np
+
 from config import DataState
 from config import ModelConfig
 from src.data.processing import FurtherProcessor
@@ -46,23 +48,35 @@ class ModelPipeline:
         df = clustering.pipeline(self.ds.df_pca, run_number=1, **self.config.clustering_params)
         return df
 
+    def review_matches(self, df):
+        df_raw = load_from_parquet(f'{self.save_path}/{self.ds.checkpoints[1]}.parquet')
+
+        mapping = {
+            0: 1.0,
+            2: 0.0,
+            1: 2.0,
+            3: 3.0
+        }
+        df['Cluster'] = df['Cluster'].replace(mapping)
+        df['target'] = round(df_raw['MScore_mean'], 0)
+        mask = np.where(df['target'] == df['Cluster'])
+        res = (len(mask[0])/len(df))*100
+
+        self.logger.info(f'Matches: {round(res, 2)}%')
+
     def main(self):
         t1 = time()
         try:
-            df_raw = load_from_parquet(f'{self.save_path}/{self.ds.checkpoints[1]}.parquet')
             self.ds.df = load_from_parquet(f'{self.save_path}/{self.ds.checkpoints[3]}.parquet')
             self.ds.update_feature_groups()
-
-            round_msc = round(df_raw[['MScore_mean']], 0)
-            group_msc = round_msc.groupby('MScore_mean').value_counts()
-            print(group_msc)
 
             self.apply_scaling()
 
             training_features = self.select_model_features(self.ds.feature_groups)
             self.run_pca(training_features)
 
-            self.run_clustering()
+            df = self.run_clustering()
+            self.review_matches(df)
 
         except Exception as e:
             self.logger.exception(f'Error: {e}', exc_info=e)

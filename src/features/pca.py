@@ -42,10 +42,12 @@ class PrincipleComponentsAnalysis:
         df = df[training_feautres]
 
         # df = self.feature_selection_variance(df)
+        selected_cols = df.columns
+
         df, explained_variance = self.perform_pca(df)
 
         self.logger.info(
-            'PCA explained variance: %s', explained_variance)
+            'PCA explained variance: %s', explained_variance, 'With selected features: %s', selected_cols)
         self.logger.info(
             'PCA pipeline complete. Data shape: %s', df.shape)
         return df

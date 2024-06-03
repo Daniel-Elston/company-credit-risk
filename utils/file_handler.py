@@ -27,4 +27,5 @@ def load_from_parquet(filepath):
 
 
 if __name__ == '__main__':
-    print(load_from_parquet('reports/analysis/variance/exploration_2.parquet'))
+    # print(load_from_parquet('reports/analysis/variance/exploration_2.parquet'))
+    print(load_from_parquet('data/interim/outliers.parquet').columns)
