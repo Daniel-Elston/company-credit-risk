@@ -17,6 +17,7 @@ project_dir, project_config, setup_logs = setup_project_env()
 class DataState:
     df: pd.DataFrame = None
     trans: StoreTransforms = field(default_factory=StoreTransforms)
+    checkpoints: list = field(default_factory=lambda: ['raw', 'outliers', 'transform1', 'transform2'])
     logger: logging.Logger = field(default_factory=lambda: logging.getLogger(__name__))
     trans_map: dict = field(init=False, default_factory=dict)
     feature_groups: dict = field(init=False, default_factory=dict)
@@ -33,7 +34,6 @@ class DataState:
 
     def update_feature_groups(self):
         """Update continuous, discrete, and grouped features."""
-        # self.feature_groups = group_features(config, self.df)
         self.feature_groups = group_features(self.df)
 
     def __repr__(self):

@@ -24,9 +24,6 @@ from utils.file_handler import save_json
 from utils.file_handler import save_to_parquet
 from utils.my_utils import stratified_random_sample
 from utils.setup_env import setup_project_env
-# from utils.file_handler import save_to_parquet
-# from src.data.processing import FurtherProcessor
-# from utils.file_handler import load_json
 project_dir, project_config, setup_logs = setup_project_env()
 
 
@@ -36,11 +33,6 @@ class StatsPipeline:
         self.config = config
         self.logger = logging.getLogger(self.ds.__class__.__name__)
         self.save_path = Path(project_config['path']['interim'])
-        self.checkpoints = [
-            'raw',
-            'outliers',
-            'transform1',
-            'transform2',]
 
     def run_handle_outliers(self):
         """Removes Outliers"""
@@ -66,7 +58,7 @@ class StatsPipeline:
 
     def run_exploration(self, run_n):
         """Visualise Stratified Data"""
-        self.ds.df = load_from_parquet(f'{self.save_path}/{self.checkpoints[run_n]}.parquet')
+        self.ds.df = load_from_parquet(f'{self.save_path}/{self.ds.checkpoints[run_n]}.parquet')
         df_stratified = stratified_random_sample(self.ds.df)
         visualiser = Visualiser()
         visualiser.pipeline(df_stratified, run_n, **self.ds.feature_groups)
@@ -74,7 +66,7 @@ class StatsPipeline:
 
     def run_checkpoint_exploration(self):
         """Loads checkpoint dataset -> Exploratory Analysis -> Visualise Stratified Data"""
-        self.ds.df = load_from_parquet(f'{self.save_path}/{self.checkpoints[0]}.parquet')
+        self.ds.df = load_from_parquet(f'{self.save_path}/{self.ds.checkpoints[0]}.parquet')
         self.ds.update_feature_groups()
         for i in range(0, 4):
             self.run_exploration(run_n=i), gc.collect()
@@ -100,20 +92,19 @@ class StatsPipeline:
     def main(self):
         t1 = time()
         try:
-            self.ds.df = load_from_parquet(f'{self.save_path}/{self.checkpoints[0]}.parquet')
+            self.ds.df = load_from_parquet(f'{self.save_path}/{self.ds.checkpoints[0]}.parquet')
             self.ds.update_feature_groups()
-            # DataState().update_feature_groups()
 
             self.run_handle_outliers(), gc.collect()
-            save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[1]}.parquet')
+            save_to_parquet(self.ds.df, f'{self.save_path}/{self.ds.checkpoints[1]}.parquet')
 
             self.run_distribution_analysis(), gc.collect()
             self.apply_transforms(), gc.collect()
-            save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[2]}.parquet')
+            save_to_parquet(self.ds.df, f'{self.save_path}/{self.ds.checkpoints[2]}.parquet')
 
             self.run_distribution_analysis(), gc.collect()
             self.apply_transforms(), gc.collect()
-            save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[3]}.parquet')
+            save_to_parquet(self.ds.df, f'{self.save_path}/{self.ds.checkpoints[3]}.parquet')
 
             self.run_checkpoint_exploration()
             self.run_correlation_analysis()

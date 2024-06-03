@@ -20,11 +20,6 @@ class DataPipeline:
         self.ds = data_state
         self.logger = logging.getLogger(self.ds.__class__.__name__)
         self.save_path = Path(project_config['path']['interim'])
-        self.checkpoints = [
-            'raw',
-            'outliers',
-            'transform1',
-            'transform2',]
 
     def run_make_dataset(self):
         """Loads PGSQL tables -> .parquet -> pd.DataFrame"""
@@ -55,8 +50,7 @@ class DataPipeline:
             self.run_initial_processing()
             self.run_feature_engineering()
             self.ds.update_feature_groups()
-            print(self.ds.df)
-            save_to_parquet(self.ds.df, f'{self.save_path}/{self.checkpoints[0]}.parquet')
+            save_to_parquet(self.ds.df, f'{self.save_path}/{self.ds.checkpoints[0]}.parquet')
 
         except Exception as e:
             self.logger.exception(f'Error: {e}', exc_info=e)

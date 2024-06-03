@@ -37,8 +37,9 @@ class ClusteringTool:
             raise ValueError("Invalid clustering method")
 
         labels = model.fit_predict(df)
+        df['Cluster'] = labels
         self.logger.info(f"{method} clustering complete.")
-        return model, labels
+        return df, model, labels
 
     def evaluate_clustering(self, df, labels):
         """Evaluate clustering performance using silhouette score and Davies-Bouldin index."""
@@ -49,7 +50,6 @@ class ClusteringTool:
 
     def plot_clusters(self, df, labels, title):
         """Plot clustering results."""
-        df['Cluster'] = labels
         print(df['Cluster'].value_counts())
         plt.figure(figsize=(10, 6))
         sns.scatterplot(
@@ -72,7 +72,7 @@ class ClusteringTool:
         metrics = {}
 
         for method in self.config.clustering_methods:
-            model, labels = self.fit_model(df, method=method, **clustering_params.get(method, {}))
+            df, model, labels = self.fit_model(df, method=method, **clustering_params.get(method, {}))
             silhouette_avg, db_index = self.evaluate_clustering(df, labels)
             metrics[method] = {
                 "silhouette_score": silhouette_avg,
@@ -82,3 +82,4 @@ class ClusteringTool:
 
         self.save_metrics(metrics, run_number)
         self.logger.info(f"Clustering pipeline completed for run {run_number}.")
+        return df

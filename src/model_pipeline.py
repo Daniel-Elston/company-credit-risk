@@ -22,36 +22,35 @@ class ModelPipeline:
         self.config = config
         self.logger = logging.getLogger(self.ds.__class__.__name__)
         self.save_path = Path(project_config['path']['interim'])
-        self.checkpoints = [
-            'raw',
-            'outliers',
-            'transform1',
-            'transform2',]
 
     def apply_scaling(self):
+        """Scale data using Standard Scaler"""
         scale = FurtherProcessor()
         self.ds.df = scale.pipeline(self.ds.df, **self.ds.feature_groups)
 
     def select_model_features(self, feature_groups):
+        """Select features for model training"""
         omit_cols = set(feature_groups['groups']['vol'])
         continuous = set(feature_groups['continuous'])
         training_cols = list(continuous - omit_cols)
-        target_cols = ['MScore_mean']
-        return training_cols, target_cols
+        return training_cols
 
     def run_pca(self, training_features):
+        """Perform PCA on the scaled data."""
         pca = PrincipleComponentsAnalysis(self.config)
         self.ds.df_pca = pca.pipeline(self.ds.df, training_features)
 
     def run_clustering(self):
+        """Perform clustering on the PCA data."""
         clustering = ClusteringTool(self.config)
-        clustering.pipeline(self.ds.df_pca, run_number=1, **self.config.clustering_params)
+        df = clustering.pipeline(self.ds.df_pca, run_number=1, **self.config.clustering_params)
+        return df
 
     def main(self):
         t1 = time()
         try:
-            df_raw = load_from_parquet(f'{self.save_path}/{self.checkpoints[1]}.parquet')
-            self.ds.df = load_from_parquet(f'{self.save_path}/{self.checkpoints[3]}.parquet')
+            df_raw = load_from_parquet(f'{self.save_path}/{self.ds.checkpoints[1]}.parquet')
+            self.ds.df = load_from_parquet(f'{self.save_path}/{self.ds.checkpoints[3]}.parquet')
             self.ds.update_feature_groups()
 
             round_msc = round(df_raw[['MScore_mean']], 0)
@@ -60,7 +59,7 @@ class ModelPipeline:
 
             self.apply_scaling()
 
-            training_features, target_features = self.select_model_features(self.ds.feature_groups)
+            training_features = self.select_model_features(self.ds.feature_groups)
             self.run_pca(training_features)
 
             self.run_clustering()

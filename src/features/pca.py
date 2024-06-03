@@ -27,11 +27,12 @@ class PrincipleComponentsAnalysis:
 
     def perform_pca(self, df):
         """Perform PCA on the scaled data."""
+        index = df.index
         pca = PCA(n_components=self.config.n_components)
         pca_data = pca.fit_transform(df)
         explained_variance = pca.explained_variance_ratio_
         pca_columns = [f'PC{i+1}' for i in range(pca_data.shape[1])]
-        return pd.DataFrame(pca_data, columns=pca_columns), explained_variance
+        return pd.DataFrame(pca_data, columns=pca_columns, index=index), explained_variance
 
     def pipeline(self, df, training_feautres):
         self.logger.info(
@@ -40,8 +41,7 @@ class PrincipleComponentsAnalysis:
         training_feautres = ['Leverage_mean', 'ROE_mean', 'PLTax_mean', 'EBIT_mean', 'fur_debt_to_eq']  # ,'fur_roa','fur_op_marg']
         df = df[training_feautres]
 
-        df = self.feature_selection_variance(df)
-        print(df.columns)
+        # df = self.feature_selection_variance(df)
         df, explained_variance = self.perform_pca(df)
 
         self.logger.info(
