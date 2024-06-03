@@ -86,10 +86,16 @@ class Visualiser:
         self.logger.info(
             f'Running Visualisation Pipeline. Exploration Run Number {run_number}...')
 
-        groups = feature_groups.get('groups')
-        all_cols = groups['all']
+        features = {
+            k: v for k, v in feature_groups['groups'].items()
+            if k not in {'all', 'vol'}}
 
-        dist_store, dist_names = list(groups.values())[1:], list(groups.keys())[1:]
+        all_cols = set(feature_groups['groups']['all'])-set(feature_groups['groups']['vol'])
+        all_cols = list(all_cols)
+
+        dist_store = list(features.values())
+        dist_names = list(features.keys())
+
         methods = ['pearson', 'spearman', 'kendall']
 
         Parallel(n_jobs=4)(

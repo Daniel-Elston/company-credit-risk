@@ -37,7 +37,7 @@ class InitialProcessor:
             'MScore.2018', 'MScore.2017', 'MScore.2016', 'MScore.2015']
         mapping = {
             'Italy': 0, 'France': 1, 'Spain': 2, 'Germany': 3,
-            'AAA': 0, 'AA': 1, 'A': 2, 'BBB': 3, 'BB': 4, 'B': 5, 'CCC': 6, 'CC': 7, 'C': 8, 'D': 9
+            'AAA': 0, 'AA': 0, 'A': 0, 'BBB': 1, 'BB': 1, 'B': 1, 'CCC': 2, 'CC': 2, 'C': 2, 'D': 3
         }
         df[to_map] = df[to_map].replace(mapping)
         return df

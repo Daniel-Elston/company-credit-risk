@@ -52,4 +52,24 @@ class StatisticState:
     dbscan_eps: float = 0.5
     dbscan_min_samples: int = 5
     var_threshold: float = 0.1
-    n_components: int = 6
+    n_components: int = 3
+
+
+@dataclass
+class ModelState:
+    random_state: int = 42
+    n_clusters: int = 4
+    eps: float = 0.5
+    min_samples: int = 5
+    clustering_methods: list = field(default_factory=lambda: ['kmeans', 'dbscan', 'agglomerative'])
+    clustering_params: dict = field(init=False)
+
+    def __post_init__(self):
+        self.clustering_params = {
+            'kmeans': {
+                'n_clusters': self.n_clusters, 'random_state': self.random_state},
+            'dbscan': {
+                'eps': self.eps, 'min_samples': self.min_samples},
+            'agglomerative': {
+                'n_clusters': self.n_clusters}
+        }

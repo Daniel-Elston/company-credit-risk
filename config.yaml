@@ -28,6 +28,8 @@ path:
   maps: reports/analysis/maps
   eigen: reports/analysis/eigenvalues
 
+  clustering: reports/results
+
 ##########################################################################################
 
 # LISTS

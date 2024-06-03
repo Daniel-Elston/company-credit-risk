@@ -33,12 +33,15 @@ class PrincipleComponentsAnalysis:
         pca_columns = [f'PC{i+1}' for i in range(pca_data.shape[1])]
         return pd.DataFrame(pca_data, columns=pca_columns), explained_variance
 
-    def pipeline(self, df, **feature_groups):
+    def pipeline(self, df, training_feautres):
         self.logger.info(
             'Running PCA pipeline. Data shape: %s', df.shape)
-        df = df[feature_groups['continuous']]
 
-        # df = self.feature_selection_variance(df)
+        training_feautres = ['Leverage_mean', 'ROE_mean', 'PLTax_mean', 'EBIT_mean', 'fur_debt_to_eq']  # ,'fur_roa','fur_op_marg']
+        df = df[training_feautres]
+
+        df = self.feature_selection_variance(df)
+        print(df.columns)
         df, explained_variance = self.perform_pca(df)
 
         self.logger.info(
