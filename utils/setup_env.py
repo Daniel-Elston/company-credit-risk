@@ -20,14 +20,14 @@ def setup_project_env(
     # Load configuration
     config_path = project_dir / config_filename
     with open(config_path, 'r', encoding='utf-8') as file:
-        config = yaml.safe_load(file)
+        project_config = yaml.safe_load(file)
 
     # Set up logging
     setup_logs = setup_logging(
-        'DataPipeline', project_dir, f'{Path(__file__).stem}.log', config)
+        'DataPipeline', project_dir, f'{Path(__file__).stem}.log', project_config)
 
-    return project_dir, config, setup_logs
+    return project_dir, project_config, setup_logs
 
 
 if __name__ == '__main__':
-    project_dir, config, setup_logs = setup_project_env()
+    project_dir, project_config, setup_logs = setup_project_env()

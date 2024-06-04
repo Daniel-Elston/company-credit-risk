@@ -1,0 +1,1 @@
+{"random_state": 42, "var_threshold": 0.1, "n_components": 3, "n_clusters": 4, "eps": 0.5, "min_samples": 5, "clustering_methods": ["kmeans", "dbscan", "agglomerative"], "clustering_params": {"kmeans": {"n_clusters": 4, "random_state": 42}, "dbscan": {"eps": 0.5, "min_samples": 5}, "agglomerative": {"n_clusters": 4}}}

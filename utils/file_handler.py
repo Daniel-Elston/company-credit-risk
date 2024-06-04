@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import logging
+from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -24,6 +26,18 @@ def save_to_parquet(df, filepath):
 def load_from_parquet(filepath):
     table = pq.read_table(filepath)
     return table.to_pandas()
+
+
+def save_checkpoint(df, checkpoint):
+    path = Path(f'data/checkpoints/{checkpoint}.parquet')
+    logging.info(f'Saving checkpoint to {path}')
+    save_to_parquet(df, path)
+
+
+def load_checkpoint(checkpoint):
+    path = Path(f'data/checkpoints/{checkpoint}.parquet')
+    logging.info(f'Loading checkpoint from {path}')
+    return load_from_parquet(path)
 
 
 if __name__ == '__main__':

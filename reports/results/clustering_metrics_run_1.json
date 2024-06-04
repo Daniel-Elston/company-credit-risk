@@ -1,0 +1,1 @@
+{"kmeans": {"silhouette_score": 0.45322010424417103, "davies_bouldin_index": 0.8369216880497777}, "dbscan": {"silhouette_score": 0.4055721886481178, "davies_bouldin_index": 0.9017723534970998}, "agglomerative": {"silhouette_score": 0.4269911666830287, "davies_bouldin_index": 0.9797750397712905}}

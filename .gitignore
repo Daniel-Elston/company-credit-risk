@@ -1,4 +1,4 @@
-reports/*
+# reports/*
 commit-msg.txt
 notebooks/*
 data/raw/*
